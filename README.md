@@ -80,11 +80,21 @@ O **CashPilot** oferece ferramentas completas para gerenciar suas finanças pess
     
   <a href="https://youtu.be/fAFpzl_m-mw">
     <img src="https://img.shields.io/badge/Screencast-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
+
+  <a href="https://cashpilot-dhawgwfjhvd4fvgu.brazilsouth-01.azurewebsites.net/users/login/">
+    <img src="https://img.shields.io/badge/Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
   </a>
 
 ### Quadro
 
 ![Quadro](https://github.com/user-attachments/assets/3095d0c7-04fb-4580-a294-1c9828826b9f)
+
+### Deployment
+
+  O deploy pode ser através do link (https://cashpilot-dhawgwfjhvd4fvgu.brazilsouth-01.azurewebsites.net/users/login/). Para entrar no CashPilot, devem ser fornecidos o nome do usuário e a senha. Caso ainda não os tenha, deve ser feito antes o cadastro. Acessado o CashPilot, a tela inicial mostrará o saldo atual. Há quatro opções: adicionar nova receita, adicionar nova despesa, ver gráficos e ver movimentações financeiras. Para adicionar nova receita, o usuário deve informar sua descrição, seu valor e sua data.Já na aba de adicionar nova despesa, o usuário deve colocar como descrição uma das categorias pré-definidas, e, assim como fez com a receita, adicionar seu valor e data. Quanto a a parte de gráficos, quatro estão disponíveis: um que mostra o saldo(positivo ou negativo) por mês, outro que mostra o saldo líquido, um que mostra as entradas e saídas do mês atual e outro que mostra as saídas por categoria. Por fim, na parte de movimentações financeiras está disponível um extrato contendo as entradas e saídas e suas descrições, valores e datas. Tal extrato pode ser impresso
 
 ### Relato da programação em par
 
