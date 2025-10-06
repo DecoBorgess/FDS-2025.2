@@ -107,3 +107,37 @@ Trabalhando em cojunto desenvolvemos a parte do backend para as páginas de logi
   </p>
 
 </details>
+
+<details>
+  <summary><h2><strong>Entrega 3</strong></h2></summary>
+  <br>
+  
+
+  <br>
+  <br>
+  <p align="center">
+    
+  <a href="https://cesarfds.atlassian.net/jira/software/projects/SCRUM/boards/1">
+      <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
+  </a>
+    
+  <a href="https://youtu.be/fAFpzl_m-mw">
+    <img src="https://img.shields.io/badge/Screencast-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
+
+  <a href="https://cashpilot-dhawgwfjhvd4fvgu.brazilsouth-01.azurewebsites.net/users/login/">
+    <img src="https://img.shields.io/badge/Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
+
+
+
+
+
+### Relato da programação em par
+
+
+  </p>
+
+</details>
