@@ -16,7 +16,7 @@ class Teste_cadastro(StaticLiveServerTestCase):
         opcoes.add_argument("--headless=new")
         opcoes.add_argument("--no-sandbox")
         opcoes.add_argument("--disable-dev-shm-usage")
-        service = Service("/usr/local/bin/chromedriver")  # ajuste se necessário
+        service = Service("/usr/local/bin/chromedriver")  
         cls.navegador = webdriver.Chrome(service=service, options=opcoes)
         cls.navegador.implicitly_wait(5)
 
@@ -54,7 +54,7 @@ class Teste_login(StaticLiveServerTestCase):
         opcoes.add_argument("--headless=new")
         opcoes.add_argument("--no-sandbox")
         opcoes.add_argument("--disable-dev-shm-usage")
-        service = Service("/usr/local/bin/chromedriver")  # ajuste se necessário
+        service = Service("/usr/local/bin/chromedriver")  
         cls.navegador = webdriver.Chrome(service=service, options=opcoes)
         cls.navegador.implicitly_wait(5)
 
@@ -65,7 +65,7 @@ class Teste_login(StaticLiveServerTestCase):
 
     def setUp(self):
         self.espera = WebDriverWait(self.navegador, 10)
-        # Criar usuário de teste para login
+        
         self.usuario = User.objects.create_user(username="bernardo", password="123456")
 
     def test_formulario_login(self):
@@ -85,7 +85,7 @@ class Teste_login(StaticLiveServerTestCase):
         self.assertTrue(botao_entrar.is_displayed())
         self.assertTrue(link_cadastro.is_displayed())
 
-    # ---------- Novas funções adicionadas ----------
+    
     def test_login_sucesso(self):
         url = self.live_server_url + reverse("login")
         self.navegador.get(url)
