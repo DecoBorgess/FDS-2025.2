@@ -2,11 +2,8 @@ from django.shortcuts import render, redirect
 from .models import Entradas,Saidas,Saldo
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-import matplotlib.pyplot as plt
-import numpy as np
-import datetime, json
-from django.utils import timezone
-from datetime import date
+import datetime
+import json
 
 
 def index(request):
