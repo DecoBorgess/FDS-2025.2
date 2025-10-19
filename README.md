@@ -111,7 +111,8 @@ Trabalhando em cojunto desenvolvemos a parte do backend para as páginas de logi
 <details>
   <summary><h2><strong>Entrega 3</strong></h2></summary>
   <br>
-  
+
+   Nesta terceira etapa da entrega, demos continuidade a execução prática do projeto, sendo implementadas as seguintes histórias: visualizar gráficos de evolução financeira, visualizar dashboard contendo extratos financeiros, e exportar dados em CSV ou PDF.
 
   <br>
   <br>
