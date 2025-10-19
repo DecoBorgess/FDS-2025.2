@@ -2,9 +2,13 @@ from django.shortcuts import render, redirect
 from .models import Entradas,Saidas,Saldo
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
+from django.http import HttpResponse
 import datetime
 import json
-
+import csv
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
 
 def index(request):
     return render(request, 'app1/html/index.html')
@@ -145,3 +149,133 @@ def dashboard(request):
         "saidas_por_categoria": saidas_por_categoria,
     }
     return render(request, "app1/html/dashboard.html", context)
+
+@login_required
+def exportar_csv(request):
+    #aq esta lendo o banco
+    entradas = Entradas.objects.filter(owner=request.user).order_by('date')
+    saidas = Saidas.objects.filter(owner=request.user).order_by('date')
+    saldos = Saldo.objects.filter(owner=request.user).order_by('data')
+
+
+    transacoes = []
+    # aq esta juntando as entradas e saidas em uma unica lista em forma de dicionario
+    for e in entradas:
+        transacoes.append({
+            'tipo': 'Entrada',
+            'descricao': e.descricao,
+            'valor': e.valor,
+            'data': e.date,
+        })
+    # faz o mesmo para as saidas
+    for s in saidas:
+        transacoes.append({
+            'tipo': 'Saída',
+            'descricao': s.descricao,
+            'valor': -s.valor,  
+            'data': s.date,
+        })
+
+    
+    transacoes.sort(key=lambda t: t['data'])#ordena pela data
+
+    def get_saldo_por_data(data_transacao):# vai checar se tem um saldo para cada transacao pela data 
+        saldo_registros = saldos.filter(data__lte=data_transacao).order_by('-data')
+        if saldo_registros.exists():
+            return saldo_registros.first().valor
+        return None  
+
+    response = HttpResponse(content_type='text/csv')# criando o arquivo csv
+    response['Content-Disposition'] = 'attachment; filename="extrato.csv"'# nome do arquivo
+
+    writer = csv.writer(response) # criando o escritor do csv
+    writer.writerow(['Tipo', 'Descrição', 'Valor', 'Data', 'Saldo'])#escreve na primeira linha isso
+
+   # escreve linha por linha no csv, pegando cada item pela chaave do dicionario
+    for t in transacoes:
+        saldo_valor = get_saldo_por_data(t['data'])
+        writer.writerow([
+            t['tipo'],
+            t['descricao'],
+            f"{t['valor']:.2f}",
+            t['data'].strftime("%d/%m/%Y"),
+            f"{saldo_valor:.2f}" if saldo_valor is not None else "-"
+        ])
+
+    return response
+
+@login_required
+def exportar_pdf(request):
+    entradas=Entradas.objects.filter(owner=request.user).order_by('date')
+    saidas=Saidas.objects.filter(owner=request.user).order_by('date')
+    saldos=Saldo.objects.filter(owner=request.user).order_by('data')
+
+    transacoes=[]
+    for e in entradas:
+        transacoes.append({
+            'tipo': 'Entrada',
+            'descricao': e.descricao,
+            'valor': e.valor,
+            'data': e.date,
+        })
+    for s in saidas:
+        transacoes.append({
+            'tipo': 'Saída',
+            'descricao': s.descricao,
+            'valor': -s.valor,  
+            'data': s.date,
+        })
+    
+    transacoes.sort(key=lambda t: t['data'])
+
+    def get_saldo_por_data(data_transacao):# vai checar se tem um saldo para cada transacao pela data 
+        saldo_registros = saldos.filter(data__lte=data_transacao).order_by('-data')
+        if saldo_registros.exists():
+            return saldo_registros.first().valor
+        return None 
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="extrato.pdf"'
+    
+    #parte da logica que se distingue do csv
+    # criando o pdf
+    p = canvas.Canvas(response, pagesize=A4)
+    largura, altura = A4
+    
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(2*cm, altura - 2*cm, "Extrato Financeiro")
+    p.setFont("Helvetica", 12)
+    p.drawString(2*cm, altura - 2.7*cm, f"Usuário: {request.user.username}")
+
+    y = altura - 4*cm
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(2*cm, y, "Tipo")
+    p.drawString(5*cm, y, "Descrição")
+    p.drawString(11*cm, y, "Valor (R$)")
+    p.drawString(15*cm, y, "Data")
+    p.drawString(18*cm, y, "Saldo")
+    y -= 0.5*cm
+    p.line(2*cm, y, 20*cm, y)
+    y -= 0.5*cm
+    p.setFont("Helvetica", 10)
+    for t in transacoes:
+        saldo_valor = get_saldo_por_data(t['data'])
+        
+        if y < 3*cm:
+            p.showPage()
+            y = altura - 3*cm
+            p.setFont("Helvetica", 10)
+
+        p.drawString(2*cm, y, t['tipo'])
+        p.drawString(5*cm, y, str(t['descricao'])[:30])
+        p.drawRightString(13.5*cm, y, f"{t['valor']:.2f}")
+        p.drawString(15*cm, y, t['data'].strftime("%d/%m/%Y"))
+        p.drawRightString(20*cm, y, f"{saldo_valor:.2f}" if saldo_valor is not None else "-")
+        y -= 0.6*cm
+
+    p.setFont("Helvetica-Oblique", 9)
+    p.drawString(2*cm, 1.5*cm, "Gerado automaticamente pelo sistema.")
+    p.showPage()
+    p.save()
+
+    return response
