@@ -159,7 +159,13 @@
         </ul>
         
         <div class="print-button-container">
-            <button class="print-button" onclick="window.print()">Imprimir Extrato</button>
+            <a href="{% url 'exportar_csv' %}" class="print-button" style="background-color:#007bff;">
+                📄 Baixar CSV
+            </a>
+            <a href="{% url 'exportar_pdf' %}" class="print-button" style="background-color:#dc3545;">
+                🧾 Baixar PDF
+            </a>
+            <button class="print-button" onclick="window.print()">🖨️ Imprimir Extrato</button>
         </div>
     </div>
 
