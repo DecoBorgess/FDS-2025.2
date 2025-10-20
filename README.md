@@ -98,11 +98,20 @@ O **CashPilot** oferece ferramentas completas para gerenciar suas finanças pess
 
 ### Relato da programação em par
 
-Dupla: Bernardo e André Borges:
+Dupla: 
+Bernardo Leão e André Borges:
+
 A programação em dupla foi feita da seguinte maneira, Bernardo começava a fazer o código enquando André tentava perceber algum possível erro. André também ficava comentando possíveis melhorias e relatava pontos com uma ótica diferente acerca do código.
 
-Membros: Luiz Eduardo, Bernardo, André, Vinicius, Júlio:
+Membros: 
+Luiz Eduardo, Bernardo Leão, André Borges, Vinicius Gomes e Júlio:
+
 Trabalhando em cojunto desenvolvemos a parte do backend para as páginas de login e logout, de forma que Bernardo e Luiz Eduardo escreveram o código enquanto os outros assumiram a função de corretores do código e propuseram comentários de melhorias.
+
+Membros: 
+Rodrigo Paiva, Felipe Braz e Pedro Canel:
+
+Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo na criação das páginas html e css do Cash Pilot. Enquanto isso, Felipe revisou todas as páginas e incrementou elas, melhorando ainda mais o design e funcionalidade de cada uma. 
 
   </p>
 
