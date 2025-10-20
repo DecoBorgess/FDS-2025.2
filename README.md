@@ -1,6 +1,6 @@
 # CashPilot – Planner Financeiro Pessoal 💵
 
-O **CashPilot** é um planner financeiro pessoal projetado para ajudá-lo a gerenciar suas finanças de forma prática e eficiente.
+O **CashPilot** é um planner financeiro pessoal projetado para ajudar o usuário a gerenciar suas finanças de forma prática e eficiente.
 
 - **Controle de receitas e despesas:** acompanhe todos os seus gastos e entradas em um só lugar.
 - **Gráficos de evolução financeira:** visualize o crescimento do seu saldo e padrões de consumo ao longo do tempo.
@@ -101,7 +101,7 @@ O **CashPilot** oferece ferramentas completas para gerenciar suas finanças pess
 Dupla: Bernardo e André Borges:
 A programação em dupla foi feita da seguinte maneira, Bernardo começava a fazer o código enquando André tentava perceber algum possível erro. André também ficava comentando possíveis melhorias e relatava pontos com uma ótica diferente acerca do código.
 
-Membros: Luiz Eduardo, Bernardo, André, Vinicios, Júlio:
+Membros: Luiz Eduardo, Bernardo, André, Vinicius, Júlio:
 Trabalhando em cojunto desenvolvemos a parte do backend para as páginas de login e logout, de forma que Bernardo e Luiz Eduardo escreveram o código enquanto os outros assumiram a função de corretores do código e propuseram comentários de melhorias.
 
   </p>
@@ -112,7 +112,11 @@ Trabalhando em cojunto desenvolvemos a parte do backend para as páginas de logi
   <summary><h2><strong>Entrega 3</strong></h2></summary>
   <br>
 
-   Nesta terceira etapa da entrega, demos continuidade a execução prática do projeto, sendo implementadas as seguintes histórias: visualizar gráficos de evolução financeira, visualizar dashboard contendo extratos financeiros, e exportar dados em CSV ou PDF.
+   Nesta terceira etapa da entrega, demos continuidade a execução prática do projeto, sendo implementadas as seguintes histórias:
+   
+   - visualizar gráficos de evolução financeira
+   - visualizar dashboard contendo extratos financeiros
+   - exportar dados em CSV ou PDF.
 
   <br>
   <br>
