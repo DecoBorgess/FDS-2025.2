@@ -7,16 +7,21 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager  # ✅ novo import
 
 class Teste_cadastro(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         opcoes = Options()
-        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--headless=new")  # roda sem abrir janela
         opcoes.add_argument("--no-sandbox")
         opcoes.add_argument("--disable-dev-shm-usage")
-        service = Service("/usr/local/bin/chromedriver")  
+        opcoes.add_argument("--disable-gpu")
+        opcoes.add_argument("--window-size=1920,1080")
+
+        # ✅ usa o webdriver-manager para instalar automaticamente o ChromeDriver
+        service = Service(ChromeDriverManager().install())
         cls.navegador = webdriver.Chrome(service=service, options=opcoes)
         cls.navegador.implicitly_wait(5)
 
@@ -35,16 +40,19 @@ class Teste_cadastro(StaticLiveServerTestCase):
 
         formulario = self.navegador.find_element(By.TAG_NAME, "form")
         self.assertTrue(formulario.is_displayed())
+
         campo_usuario = self.navegador.find_element(By.ID, "id_username")
         campo_senha1 = self.navegador.find_element(By.ID, "id_password1")
         campo_senha2 = self.navegador.find_element(By.ID, "id_password2")
         botao_cadastrar = self.navegador.find_element(By.TAG_NAME, "button")
         link_login = self.navegador.find_element(By.LINK_TEXT, "Entre aqui")
+
         self.assertTrue(campo_usuario.is_displayed())
         self.assertTrue(campo_senha1.is_displayed())
         self.assertTrue(campo_senha2.is_displayed())
         self.assertTrue(botao_cadastrar.is_displayed())
         self.assertTrue(link_login.is_displayed())
+
 
 class Teste_login(StaticLiveServerTestCase):
     @classmethod
@@ -54,7 +62,11 @@ class Teste_login(StaticLiveServerTestCase):
         opcoes.add_argument("--headless=new")
         opcoes.add_argument("--no-sandbox")
         opcoes.add_argument("--disable-dev-shm-usage")
-        service = Service("/usr/local/bin/chromedriver")  
+        opcoes.add_argument("--disable-gpu")
+        opcoes.add_argument("--window-size=1920,1080")
+
+        # ✅ driver automático
+        service = Service(ChromeDriverManager().install())
         cls.navegador = webdriver.Chrome(service=service, options=opcoes)
         cls.navegador.implicitly_wait(5)
 
@@ -65,7 +77,6 @@ class Teste_login(StaticLiveServerTestCase):
 
     def setUp(self):
         self.espera = WebDriverWait(self.navegador, 10)
-        
         self.usuario = User.objects.create_user(username="bernardo", password="123456")
 
     def test_formulario_login(self):
@@ -80,12 +91,12 @@ class Teste_login(StaticLiveServerTestCase):
         campo_senha = self.navegador.find_element(By.ID, "id_senha")
         botao_entrar = self.navegador.find_element(By.TAG_NAME, "button")
         link_cadastro = self.navegador.find_element(By.LINK_TEXT, "Cadastre-se")
+
         self.assertTrue(campo_login.is_displayed())
         self.assertTrue(campo_senha.is_displayed())
         self.assertTrue(botao_entrar.is_displayed())
         self.assertTrue(link_cadastro.is_displayed())
 
-    
     def test_login_sucesso(self):
         url = self.live_server_url + reverse("login")
         self.navegador.get(url)
