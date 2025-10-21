@@ -7,11 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-<<<<<<< HEAD
-=======
-import time
-from app1.models import Entradas, Saidas, Saldo
->>>>>>> dc98f42e3101751c3e4e28d0b79fe1504e76493c
 
 class Teste_base(StaticLiveServerTestCase):
     def setUp(self):
