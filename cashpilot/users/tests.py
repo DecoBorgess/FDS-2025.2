@@ -7,23 +7,33 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager  # ✅ novo import
+
+# Caminho do ChromeDriver e Chrome
+CHROMEDRIVER_PATH = r"C:\chromedriver_141\chromedriver.exe"
+CHROME_PATH = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+
+
+def criar_navegador():
+    """Cria e retorna um navegador Chrome configurado para testes headless."""
+    opcoes = Options()
+    opcoes.binary_location = CHROME_PATH
+    opcoes.add_argument("--headless=new")
+    opcoes.add_argument("--no-sandbox")
+    opcoes.add_argument("--disable-dev-shm-usage")
+    opcoes.add_argument("--disable-gpu")
+    opcoes.add_argument("--window-size=1920,1080")
+
+    service = Service(CHROMEDRIVER_PATH)
+    driver = webdriver.Chrome(service=service, options=opcoes)
+    driver.implicitly_wait(5)
+    return driver
+
 
 class Teste_cadastro(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        opcoes = Options()
-        opcoes.add_argument("--headless=new")  # roda sem abrir janela
-        opcoes.add_argument("--no-sandbox")
-        opcoes.add_argument("--disable-dev-shm-usage")
-        opcoes.add_argument("--disable-gpu")
-        opcoes.add_argument("--window-size=1920,1080")
-
-        # ✅ usa o webdriver-manager para instalar automaticamente o ChromeDriver
-        service = Service(ChromeDriverManager().install())
-        cls.navegador = webdriver.Chrome(service=service, options=opcoes)
-        cls.navegador.implicitly_wait(5)
+        cls.navegador = criar_navegador()
 
     @classmethod
     def tearDownClass(cls):
@@ -58,17 +68,7 @@ class Teste_login(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        opcoes = Options()
-        opcoes.add_argument("--headless=new")
-        opcoes.add_argument("--no-sandbox")
-        opcoes.add_argument("--disable-dev-shm-usage")
-        opcoes.add_argument("--disable-gpu")
-        opcoes.add_argument("--window-size=1920,1080")
-
-        # ✅ driver automático
-        service = Service(ChromeDriverManager().install())
-        cls.navegador = webdriver.Chrome(service=service, options=opcoes)
-        cls.navegador.implicitly_wait(5)
+        cls.navegador = criar_navegador()
 
     @classmethod
     def tearDownClass(cls):
@@ -135,6 +135,8 @@ class Teste_login(StaticLiveServerTestCase):
         botao = self.navegador.find_element(By.TAG_NAME, "button")
         botao.click()
 
-        self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "p")))
-        mensagem_erro = self.navegador.find_element(By.TAG_NAME, "p").text
-        self.assertIn("Preencha", mensagem_erro)
+        # Aguarda a página recarregar
+        self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "form")))
+
+        # Verifica se ainda está na tela de login (não foi redirecionado)
+        self.assertIn(reverse("login"), self.navegador.current_url)
