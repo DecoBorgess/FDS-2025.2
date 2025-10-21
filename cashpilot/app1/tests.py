@@ -9,6 +9,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from models import Entradas, Saidas, Saldo
 import time
+import os
+import glob
+import csv
+import pdfplumber
 class Teste_base(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -173,3 +177,118 @@ class Teste_dashboard(StaticLiveServerTestCase):
         self.assertIn("saldo_positivo", html)
         self.assertIn("saldo_negativo", html)
         self.assertIn("500", html)
+
+class TesteExtracao(StaticLiveServerTestCase):
+    """Testes automatizados de extração e validação de arquivos CSV e PDF."""
+
+    # ======== MÉTODOS DE UTILIDADE ========
+    @staticmethod
+    def ler_conteudo_csv(caminho_arquivo):
+        dados = []
+        try:
+            with open(caminho_arquivo, mode='r', newline='', encoding='utf-8') as arquivo:
+                leitor = csv.DictReader(arquivo)
+                for linha in leitor:
+                    dados.append(linha)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"ERRO: Arquivo CSV não encontrado em {caminho_arquivo}")
+        return dados
+
+    @staticmethod
+    def extrair_texto_pdf(caminho_arquivo):
+        texto_completo = ""
+        try:
+            with pdfplumber.open(caminho_arquivo) as pdf:
+                for pagina in pdf.pages:
+                    texto_completo += pagina.extract_text() + "\n"
+        except FileNotFoundError:
+            raise FileNotFoundError(f"ERRO: Arquivo PDF não encontrado em {caminho_arquivo}")
+        return texto_completo
+
+    # ======== CONFIGURAÇÃO DO SELENIUM ========
+    DOWNLOAD_DIR = os.path.join(os.getcwd(), "test_downloads")
+
+    def setUp(self):
+        """Configura o ambiente de teste com Selenium e Django."""
+        os.makedirs(self.DOWNLOAD_DIR, exist_ok=True)
+
+        # Configurações do Chrome
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        prefs = {
+            "download.default_directory": self.DOWNLOAD_DIR,
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True
+        }
+        opcoes.add_experimental_option("prefs", prefs)
+
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        # Cria e autentica usuário
+        self.usuario = User.objects.create_user(username="extrator", password="123456")
+        self.client.login(username="extrator", password="123456")
+
+        # Transfere sessão para o navegador
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({
+            "name": "sessionid",
+            "value": cookie.value,
+            "path": "/",
+            "secure": False
+        })
+        self.navegador.refresh()
+
+    def tearDown(self):
+        """Finaliza o navegador e remove arquivos baixados."""
+        self.navegador.quit()
+        for f in glob.glob(os.path.join(self.DOWNLOAD_DIR, '*')):
+            os.remove(f)
+        if os.path.exists(self.DOWNLOAD_DIR):
+            os.rmdir(self.DOWNLOAD_DIR)
+
+    # ======== TESTE CSV ========
+    def test_extracao_dados_csv_e_validacao(self):
+        """Testa a exportação e leitura de dados CSV."""
+        url_extrato = self.live_server_url + reverse("extrato")  # rota definida em urls.py
+        self.navegador.get(url_extrato)
+
+        # Aguarda o botão aparecer e clica
+        botao_csv = self.espera.until(
+            EC.presence_of_element_located((By.ID, "botao_exportar_csv"))
+        )
+        botao_csv.click()
+
+        time.sleep(3)  # aguarda download
+
+        arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*.csv"))
+        self.assertTrue(arquivos, "Nenhum arquivo CSV foi baixado.")
+        caminho_csv = arquivos[0]
+
+        dados = self.ler_conteudo_csv(caminho_csv)
+        self.assertTrue(len(dados) > 0, "O arquivo CSV baixado está vazio.")
+
+    # ======== TESTE PDF ========
+    def test_extracao_dados_pdf_e_validacao(self):
+        """Testa a exportação e leitura de dados PDF."""
+        url_extrato = self.live_server_url + reverse("extrato")
+        self.navegador.get(url_extrato)
+
+        botao_pdf = self.espera.until(
+            EC.presence_of_element_located((By.ID, "botao_exportar_pdf"))
+        )
+        botao_pdf.click()
+
+        time.sleep(3)
+
+        arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*.pdf"))
+        self.assertTrue(arquivos, "Nenhum arquivo PDF foi baixado.")
+        caminho_pdf = arquivos[0]
+
+        texto_extraido = self.extrair_texto_pdf(caminho_pdf)
+        self.assertIn("Extrato Financeiro", texto_extraido, "O PDF não contém o título esperado.")
