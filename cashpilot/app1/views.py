@@ -155,7 +155,7 @@ def exportar_csv(request):
     #aq esta lendo o banco
     entradas = Entradas.objects.filter(owner=request.user).order_by('date')
     saidas = Saidas.objects.filter(owner=request.user).order_by('date')
-    saldos = Saldo.objects.filter(owner=request.user).order_by('data')
+    saldos = Saldo.objects.filter(owner=request.user).order_by('data_registro')
 
 
     transacoes = []
@@ -180,7 +180,7 @@ def exportar_csv(request):
     transacoes.sort(key=lambda t: t['data'])#ordena pela data
 
     def get_saldo_por_data(data_transacao):# vai checar se tem um saldo para cada transacao pela data 
-        saldo_registros = saldos.filter(data__lte=data_transacao).order_by('-data')
+        saldo_registros = saldos.filter(data_registro__lte=data_transacao).order_by('-data_registro')
         if saldo_registros.exists():
             return saldo_registros.first().valor
         return None  
@@ -208,7 +208,7 @@ def exportar_csv(request):
 def exportar_pdf(request):
     entradas=Entradas.objects.filter(owner=request.user).order_by('date')
     saidas=Saidas.objects.filter(owner=request.user).order_by('date')
-    saldos=Saldo.objects.filter(owner=request.user).order_by('data')
+    saldos=Saldo.objects.filter(owner=request.user).order_by('data_registro')
 
     transacoes=[]
     for e in entradas:
@@ -229,7 +229,7 @@ def exportar_pdf(request):
     transacoes.sort(key=lambda t: t['data'])
 
     def get_saldo_por_data(data_transacao):# vai checar se tem um saldo para cada transacao pela data 
-        saldo_registros = saldos.filter(data__lte=data_transacao).order_by('-data')
+        saldo_registros = saldos.filter(data_registro__lte=data_transacao).order_by('-data_registro')
         if saldo_registros.exists():
             return saldo_registros.first().valor
         return None 
