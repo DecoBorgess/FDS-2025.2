@@ -1,4 +1,5 @@
-{%extends "app1/html/base.html"%}{% block content %}
+{% extends "app1/html/base.html" %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -7,8 +8,10 @@
     <title>Movimentações Financeiras</title>
     <style>
 
+        /* ESTILOS GERAIS E LAYOUT BASE */
         body {
-            background-color: #333;
+            /* Mantendo o fundo que você especificou, mas lembre-se que em 'base.html' ele pode ser diferente */
+            background-color: #f4f4f4; 
             font-family: Arial, sans-serif;
             color: #333;
             margin: 0;
@@ -16,12 +19,12 @@
         }
 
         .extrato-container {
-            max-width: 800px;
+            max-width: 1200px; /* Aumentado para acomodar duas colunas */
             margin: 40px auto;
             background-color: #fff;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Sombra ajustada */
         }
 
         .extrato-container h1 {
@@ -30,16 +33,30 @@
             font-size: 24px;
             color: #444;
         }
+
+        /* LAYOUT DE DUAS COLUNAS (FLEXBOX) */
+        .movimentacoes-flex {
+            display: flex;
+            gap: 30px; /* Espaço entre as colunas */
+            margin-bottom: 30px;
+        }
+
+        .bloco-movimentacao {
+            flex: 1; /* Faz com que ambos os blocos ocupem a mesma largura */
+            min-width: 0;
+        }
         
-        .extrato-container h2 {
-            margin-top: 30px;
+        /* Ajuste dos títulos para o novo layout */
+        .bloco-movimentacao h2 {
+            margin-top: 0; /* Remove a margem superior (30px) do bloco de origem */
             margin-bottom: 10px;
             font-size: 18px;
             color: #555;
             padding-bottom: 5px;
             border-bottom: 2px solid #f0f0f0;
         }
-
+        
+        /* ESTILOS DE LISTA */
         .movimentacoes-list {
             list-style: none;
             padding: 0;
@@ -50,7 +67,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 5px;
+            padding: 10px 0; /* Reduzido para caber mais itens na tela */
             border-bottom: 1px solid #eee;
         }
 
@@ -65,12 +82,15 @@
 
         .movimentacao-info .data {
             font-weight: bold;
-            margin-right: 15px;
+            margin-right: 10px; /* Ajustado */
             white-space: nowrap;
+            min-width: 85px;
         }
         
         .movimentacao-info .descricao {
             color: #555;
+            /* Garante que o texto quebre */
+            word-break: break-word; 
         }
 
         .valor {
@@ -91,14 +111,17 @@
         .filler {
             flex-grow: 1;
             border-bottom: 2px dotted #ccc;
-            margin: 0 15px;
+            margin: 0 10px; /* Ajustado */
             position: relative;
-            bottom: 4px;
+            bottom: 2px; /* Ajustado para ficar mais centralizado na linha */
         }
 
+        /* ESTILOS DE BOTÕES */
         .print-button-container {
-            text-align: right;
-            margin-top: 30px;
+            text-align: center; /* Centralizado para melhor visualização em largura maior */
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
         }
 
         .print-button {
@@ -110,19 +133,36 @@
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
-            margin-left: 10px;
+            margin: 0 5px; /* Ajuste para espaçar os botões */
             text-decoration: none;
             display: inline-block;
         }
-
+        
         .print-button:hover {
             background-color: #5a6268;
         }
+
+        /* Cores dos botões de download */
+        .print-button.csv { background-color: #007bff !important; }
+        .print-button.pdf { background-color: #dc3545 !important; }
         
         .no-data {
             text-align: center;
             color: #888;
             padding: 20px 0;
+        }
+
+        /* Media Query para telas pequenas: Volta para layout vertical */
+        @media (max-width: 900px) {
+            .extrato-container {
+                max-width: 95%;
+            }
+            .movimentacoes-flex {
+                flex-direction: column; 
+            }
+            .bloco-movimentacao {
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -131,41 +171,50 @@
     <div class="extrato-container">
         <h1>Movimentações Financeiras</h1>
 
-        <h2>Entradas</h2>
-        <ul class="movimentacoes-list">
-            {% for entrada in entradas %}
-            <li>
-                <div class="movimentacao-info">
-                    <span class="data">{{ entrada.date|date:"d/m/Y" }}:</span>
-                    <span class="descricao">{{ entrada.descricao }}</span> </div>
-                <div class="filler"></div>
-                <span class="valor entrada">+ {{ entrada.valor|floatformat:2 }}</span>
-            </li>
-            {% empty %}
-                <p class="no-data">Nenhuma entrada registrada.</p>
-            {% endfor %}
-        </ul>
+        <div class="movimentacoes-flex">
 
-        <h2>Saídas</h2>
-        <ul class="movimentacoes-list">
-            {% for saida in saidas %}
-            <li>
-                <div class="movimentacao-info">
-                    <span class="data">{{ saida.date|date:"d/m/Y" }}:</span>
-                    <span class="descricao">{{ saida.descricao }}</span> </div>
-                <div class="filler"></div>
-                <span class="valor saida">- {{ saida.valor|floatformat:2 }}</span>
-            </li>
-            {% empty %}
-                <p class="no-data">Nenhuma saída registrada.</p>
-            {% endfor %}
-        </ul>
+            <div class="bloco-movimentacao">
+                <h2>Entradas</h2>
+                <ul class="movimentacoes-list">
+                    {% for entrada in entradas %}
+                    <li>
+                        <div class="movimentacao-info">
+                            <span class="data">{{ entrada.date|date:"d/m/Y" }}:</span>
+                            <span class="descricao">{{ entrada.descricao }}</span>
+                        </div>
+                        <div class="filler"></div>
+                        <span class="valor entrada">+ {{ entrada.valor|floatformat:2 }}</span>
+                    </li>
+                    {% empty %}
+                        <p class="no-data">Nenhuma entrada registrada.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="bloco-movimentacao">
+                <h2>Saídas</h2>
+                <ul class="movimentacoes-list">
+                    {% for saida in saidas %}
+                    <li>
+                        <div class="movimentacao-info">
+                            <span class="data">{{ saida.date|date:"d/m/Y" }}:</span>
+                            <span class="descricao">{{ saida.descricao }}</span>
+                        </div>
+                        <div class="filler"></div>
+                        <span class="valor saida">- {{ saida.valor|floatformat:2 }}</span>
+                    </li>
+                    {% empty %}
+                        <p class="no-data">Nenhuma saída registrada.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
         
         <div class="print-button-container">
-            <a href="{% url 'csv' %}" class="print-button" style="background-color:#007bff;">
+            <a href="{% url 'csv' %}" class="print-button csv">
                 📄 Baixar CSV
             </a>
-            <a href="{% url 'pdf' %}" class="print-button" style="background-color:#dc3545;">
+            <a href="{% url 'pdf' %}" class="print-button pdf">
                 🧾 Baixar PDF
             </a>
             <button class="print-button" onclick="window.print()">🖨️ Imprimir Extrato</button>
