@@ -7,7 +7,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from models import Entradas, Saidas, Saldo
+import time
 class Teste_base(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
