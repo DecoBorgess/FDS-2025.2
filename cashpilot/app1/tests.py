@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from .models import Entradas, Saidas, Saldo
 import time
@@ -32,7 +32,6 @@ class Teste_base(StaticLiveServerTestCase):
         self.usuario = User.objects.create_user(username="pedro", password="123456")
         self.client.login(username="pedro", password="123456")
 
-        # Sincroniza sessão com o navegador
         cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
@@ -69,7 +68,6 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.usuario = User.objects.create_user(username="teste", password="123456")
         self.client.login(username="teste", password="123456")
 
-        # sincroniza cookie
         cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
@@ -79,12 +77,12 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario(self, descricao, valor, data):
+        """Para entradas, campo de descrição é texto livre"""
         campo_desc = self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
         campo_data = self.navegador.find_element(By.ID, "id_date")
         botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-        # preenchimento seguro
         campo_desc.clear()
         campo_valor.clear()
         campo_data.clear()
@@ -103,7 +101,6 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.assertTrue(botao.is_displayed())
 
     def test_enviar_receita_cria_objeto(self):
-        """Teste mínimo inspirado na versão corrigida: garante criação no BD"""
         self.navegador.get(self.live_server_url + reverse("entradas"))
         self.preencher_formulario("Salário", 5000, "2025-10-22")
         self.assertTrue(Entradas.objects.filter(descricao="Salário").exists())
@@ -123,10 +120,45 @@ class Teste_entradas(StaticLiveServerTestCase):
 # TESTES DE SAÍDAS
 # ==========================================================
 
-class Teste_saidas(Teste_entradas):
+class Teste_saidas(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        self.usuario = User.objects.create_user(username="teste_saida", password="123456")
+        self.client.login(username="teste_saida", password="123456")
+
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
+
+    def tearDown(self):
+        self.navegador.quit()
+
+    def preencher_formulario_saida(self, categoria, valor, data):
+        """Para saídas, campo de categoria é <select>"""
+        campo_categoria = Select(self.navegador.find_element(By.ID, "id_descricao"))
+        campo_valor = self.navegador.find_element(By.ID, "id_valor")
+        campo_data = self.navegador.find_element(By.ID, "id_date")
+        botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+
+        campo_categoria.select_by_visible_text(categoria)
+        campo_valor.clear()
+        campo_data.clear()
+        campo_valor.send_keys(str(valor))
+        campo_data.send_keys(data)
+        botao_enviar.click()
+        time.sleep(1)
+
     def test_enviar_saida_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("saidas"))
-        self.preencher_formulario("Lazer", 300, "2025-10-22")
+        self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
         self.assertTrue(Saidas.objects.filter(descricao="Lazer").exists())
 
 
