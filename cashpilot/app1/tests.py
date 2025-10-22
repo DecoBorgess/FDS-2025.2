@@ -11,14 +11,11 @@ from .models import Entradas, Saidas, Saldo
 import time
 import os
 import glob
-import csv
 import pdfplumber
-
 
 # ==========================================================
 # TESTES BASE
 # ==========================================================
-
 class Teste_base(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -54,7 +51,6 @@ class Teste_base(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE ENTRADAS
 # ==========================================================
-
 class Teste_entradas(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -90,18 +86,36 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-        # Pequena espera para garantir que o POST foi enviado
+        # Espera mínima para garantir POST
         time.sleep(1)
+
+    def test_formulario_nova_receita_visivel(self):
+        self.navegador.get(self.live_server_url + reverse("entradas"))
+        for campo_id in ["id_descricao", "id_valor", "id_date"]:
+            elemento = self.espera.until(EC.presence_of_element_located((By.ID, campo_id)))
+            self.assertTrue(elemento.is_displayed())
+        botao = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        self.assertTrue(botao.is_displayed())
 
     def test_enviar_receita_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
         self.preencher_formulario("Salário", 5000, "2025-10-22")
         self.assertTrue(Entradas.objects.filter(descricao="Salário", owner=self.usuario).exists())
 
+    def test_abas_receita_despesa_visiveis(self):
+        self.navegador.get(self.live_server_url + reverse("entradas"))
+        abas = self.navegador.find_elements(By.CLASS_NAME, "tab")
+        textos = [aba.text for aba in abas]
+        if abas:
+            self.assertIn("Receita", textos)
+            self.assertIn("Despesas", textos)
+            for aba in abas:
+                self.assertTrue(aba.is_displayed())
+
+
 # ==========================================================
 # TESTES DE SAÍDAS
 # ==========================================================
-
 class Teste_saidas(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -137,7 +151,7 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-        # Pequena espera para garantir que o POST foi enviado
+        # Espera mínima para garantir POST
         time.sleep(1)
 
     def test_enviar_saida_cria_objeto(self):
@@ -145,10 +159,10 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
         self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
 
+
 # ==========================================================
 # TESTES DE EXTRATO
 # ==========================================================
-
 class Teste_extrato(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -184,7 +198,6 @@ class Teste_extrato(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE DASHBOARD
 # ==========================================================
-
 class Teste_dashboard(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -219,7 +232,6 @@ class Teste_dashboard(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE EXPORTAÇÃO (CSV/PDF)
 # ==========================================================
-
 class TesteExtracao(StaticLiveServerTestCase):
     DOWNLOAD_DIR = os.path.join(os.getcwd(), "test_downloads")
 
