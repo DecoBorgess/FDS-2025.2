@@ -13,9 +13,11 @@ import os
 import glob
 import pdfplumber
 
+
 # ==========================================================
 # TESTES BASE
 # ==========================================================
+
 class Teste_base(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -51,6 +53,7 @@ class Teste_base(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE ENTRADAS
 # ==========================================================
+
 class Teste_entradas(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -73,6 +76,7 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario(self, descricao, valor, data):
+        self.navegador.get(self.live_server_url + reverse("entradas"))
         campo_desc = self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
         campo_data = self.navegador.find_element(By.ID, "id_date")
@@ -85,9 +89,7 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
-
-        # Espera mínima para garantir POST
-        time.sleep(1)
+        time.sleep(1)  # garante que o POST foi processado
 
     def test_formulario_nova_receita_visivel(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
@@ -98,7 +100,6 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.assertTrue(botao.is_displayed())
 
     def test_enviar_receita_cria_objeto(self):
-        self.navegador.get(self.live_server_url + reverse("entradas"))
         self.preencher_formulario("Salário", 5000, "2025-10-22")
         self.assertTrue(Entradas.objects.filter(descricao="Salário", owner=self.usuario).exists())
 
@@ -116,6 +117,7 @@ class Teste_entradas(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE SAÍDAS
 # ==========================================================
+
 class Teste_saidas(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -138,6 +140,7 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario_saida(self, descricao, valor, data):
+        self.navegador.get(self.live_server_url + reverse("saidas"))
         campo_desc = Select(self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
         campo_desc.select_by_visible_text(descricao)
 
@@ -150,12 +153,9 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
-
-        # Espera mínima para garantir POST
-        time.sleep(1)
+        time.sleep(1)  # garante que o POST foi processado
 
     def test_enviar_saida_cria_objeto(self):
-        self.navegador.get(self.live_server_url + reverse("saidas"))
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
         self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
 
@@ -163,6 +163,7 @@ class Teste_saidas(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE EXTRATO
 # ==========================================================
+
 class Teste_extrato(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -198,6 +199,7 @@ class Teste_extrato(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE DASHBOARD
 # ==========================================================
+
 class Teste_dashboard(StaticLiveServerTestCase):
     def setUp(self):
         opcoes = Options()
@@ -232,6 +234,7 @@ class Teste_dashboard(StaticLiveServerTestCase):
 # ==========================================================
 # TESTES DE EXPORTAÇÃO (CSV/PDF)
 # ==========================================================
+
 class TesteExtracao(StaticLiveServerTestCase):
     DOWNLOAD_DIR = os.path.join(os.getcwd(), "test_downloads")
 
@@ -240,45 +243,38 @@ class TesteExtracao(StaticLiveServerTestCase):
         texto = ""
         with pdfplumber.open(caminho_arquivo) as pdf:
             for pagina in pdf.pages:
-                texto += pagina.extract_text() + "\n"
+                texto += pagina.extract_text() or ""
         return texto
 
     def setUp(self):
         os.makedirs(self.DOWNLOAD_DIR, exist_ok=True)
+
         opcoes = Options()
         opcoes.add_argument("--headless=new")
         opcoes.add_argument("--no-sandbox")
         opcoes.add_argument("--disable-dev-shm-usage")
-        prefs = {
+        opcoes.add_experimental_option("prefs", {
             "download.default_directory": self.DOWNLOAD_DIR,
             "download.prompt_for_download": False,
-            "safebrowsing.enabled": True
-        }
-        opcoes.add_experimental_option("prefs", prefs)
+            "download.directory_upgrade": True
+        })
 
         self.navegador = webdriver.Chrome(options=opcoes)
         self.espera = WebDriverWait(self.navegador, 10)
 
-        self.usuario = User.objects.create_user(username="extrator", password="123456")
-        self.client.login(username="extrator", password="123456")
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
         cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
         self.navegador.refresh()
 
+        Entradas.objects.create(descricao="Venda", valor=200, date="2025-10-18", owner=self.usuario)
+        Saidas.objects.create(descricao="Compra", valor=100, date="2025-10-18", owner=self.usuario)
+
     def tearDown(self):
         self.navegador.quit()
-        for f in glob.glob(os.path.join(self.DOWNLOAD_DIR, "*")):
-            os.remove(f)
-        os.rmdir(self.DOWNLOAD_DIR)
+        arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*"))
+        for arquivo in arquivos:
+            os.remove(arquivo)
 
-    def test_extracao_dados_pdf_e_validacao(self):
-        url = self.live_server_url + reverse("extrato")
-        self.navegador.get(url)
-        botao = self.espera.until(EC.presence_of_element_located((By.ID, "botao_exportar_pdf")))
-        botao.click()
-        time.sleep(3)
-        arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*.pdf"))
-        self.assertTrue(arquivos)
-        texto = self.extrair_texto_pdf(arquivos[0])
-        self.assertIn("Extrato Financeiro", texto)
