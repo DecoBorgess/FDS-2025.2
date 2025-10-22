@@ -13,7 +13,6 @@ import os
 import glob
 import pdfplumber
 
-
 # ==========================================================
 # TESTES BASE
 # ==========================================================
@@ -89,7 +88,13 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
-        time.sleep(1)  # garante que o POST foi processado
+
+        # ✅ Espera os campos ficarem vazios após o envio
+        self.espera.until(lambda driver: 
+            driver.find_element(By.ID, "id_descricao").get_attribute("value") == "" and
+            driver.find_element(By.ID, "id_valor").get_attribute("value") == "" and
+            driver.find_element(By.ID, "id_date").get_attribute("value") == ""
+        )
 
     def test_formulario_nova_receita_visivel(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
@@ -153,12 +158,16 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
-        time.sleep(1)  # garante que o POST foi processado
+
+        # ✅ Espera os campos ficarem vazios após o envio
+        self.espera.until(lambda driver: 
+            driver.find_element(By.ID, "id_valor").get_attribute("value") == "" and
+            driver.find_element(By.ID, "id_date").get_attribute("value") == ""
+        )
 
     def test_enviar_saida_cria_objeto(self):
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
         self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
-
 
 # ==========================================================
 # TESTES DE EXTRATO
