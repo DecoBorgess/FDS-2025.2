@@ -1,86 +1,89 @@
 {% extends "app1/html/base.html" %}
 {% block content %}
-{%load static%}
+{% load static %}
 
-    <style>
-        body {
-            background-color: #333;
-            font-family: Arial, sans-serif;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .logo {
-            width: 250px;
-            height: 250px;
-            margin-bottom: 2px;
-          }
+<style>
+    body {
+        background-color: #333;
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+    }
 
-        .saldo-container {
-            max-width: 600px;
-            margin: 60px auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
+    .logo {
+        width: 250px;
+        height: 250px;
+        margin-bottom: 2px;
+    }
 
-        .saldo-container h1 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: #444;
-        }
+    .saldo-container {
+        max-width: 600px;
+        margin: 60px auto;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
 
-        .saldo-valor {
-            font-size: 36px;
-            font-weight: bold;
-            margin: 20px 0;
-            font-family: 'Courier New', Courier, monospace;
-        }
+    .saldo-container h1 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #444;
+    }
 
-        .saldo-positivo {
-            color: #28a745;
-        }
+    .saldo-valor {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 20px 0;
+        font-family: 'Courier New', Courier, monospace;
+    }
 
-        .saldo-negativo {
-            color: #dc3545;
-        }
+    .saldo-positivo {
+        color: #28a745;
+    }
 
-        .print-button-container {
-            text-align: center;
-            margin-top: 30px;
-        }
+    .saldo-negativo {
+        color: #dc3545;
+    }
 
-        .print-button {
-            padding: 12px 25px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    .print-button-container {
+        text-align: center;
+        margin-top: 30px;
+    }
 
-        .print-button:hover {
-            background-color: #5a6268;
-        }
-    </style>
+    .print-button {
+        padding: 12px 25px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .print-button:hover {
+        background-color: #5a6268;
+    }
+</style>
 
 <body>
 
-    <div class="saldo-container">
-        <h1>Saldo Financeiro</h1>
-        <p class="saldo-valor {% if saldo.valor >= 0 %}saldo-positivo{% else %}saldo-negativo{% endif %}">
-            R$ {{ saldo.valor|floatformat:2 }}
-        </p>
+    <header class="main-header">
+        <div class="saldo-container">
+            <h1>Saldo Financeiro</h1>
+            <p class="saldo-valor {% if saldo.valor >= 0 %}saldo-positivo{% else %}saldo-negativo{% endif %}">
+                R$ {{ saldo.valor|floatformat:2 }}
+            </p>
 
-        <div class="print-button-container">
-            <img src="{% static 'app1/css/logo.png' %}" alt="Logo CashPilot" class="logo">
+            <div class="print-button-container">
+                <img src="{% static 'app1/css/logo.png' %}" alt="Logo CashPilot" class="logo">
+            </div>
         </div>
-    </div>
+    </header>
 
 </body>
 
-{% endblock content %} 
+{% endblock content %}
