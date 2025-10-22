@@ -48,10 +48,10 @@
 
     <!-- BOTÕES DE AÇÃO -->
     <div class="print-button-container">
-        <a href="{% url 'csv' %}" class="print-button csv" id="botao_exportar_csv">
+        <a id="botao_exportar_csv" href="{% url 'csv' %}" class="print-button csv" id="botao_exportar_csv">
             📄 Baixar CSV
         </a>
-        <a href="{% url 'pdf' %}" class="print-button pdf" id="botao_exportar_pdf">
+        <a id="botao_exportar_pdf" href="{% url 'pdf' %}" class="print-button pdf" id="botao_exportar_pdf">
             🧾 Baixar PDF
         </a>
         <button class="print-button" onclick="window.print()">🖨️ Imprimir Extrato</button>
