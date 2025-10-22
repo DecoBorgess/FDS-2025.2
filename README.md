@@ -161,7 +161,7 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
 
 ### Quadro
 
-
+![Print do quadro do Jira da entrega 3](fotos_do_readme/QuadroEntrega3.png)
 
 ### Deployment:
 
