@@ -1,281 +1,280 @@
-from django.shortcuts import render, redirect
-from .models import Entradas,Saidas,Saldo
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from django.http import HttpResponse
-import datetime
-import json
-import csv
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-
-def index(request):
-    return render(request, 'app1/html/index.html')
-
-@login_required
-def entradas_view(request):
-    errors = None
-    if request.method == 'POST':
-        descricao = request.POST.get("descricao")
-        valor = request.POST.get("valor")
-        date_str = request.POST.get("date") 
-
-        if descricao and valor and date_str:
-            try:
-                valor = float(valor)
-                entrada = Entradas(
-                    descricao=descricao,
-                    valor=valor,
-                    date=date_str, 
-                    owner=request.user
-                )
-                entrada.save()
-                Saldo.criar_registro_saldo_apos_transacao(request.user)
-                
-                return redirect('entradas')  
-            except Exception as e:
-                errors = f"Erro ao salvar: {e}"
-        else:
-            errors = "Todos os campos são obrigatórios."
-    entradas = Entradas.objects.filter(owner=request.user).order_by('-date')
-    context = {"errors": errors, "entradas": entradas}
-    return render(request, "app1/html/entradas.html", context)
-
-@login_required
-def saidas_view(request):
-    errors = []
-    selected_descricao = ''
-    valor = ''
-    date_str = ''
-
-    if request.method == "POST":
-        selected_descricao = request.POST.get("descricao", "").strip()
-        valor = request.POST.get("valor", "").strip()
-        date_str = request.POST.get("date", "").strip()
-
-        
-        if not selected_descricao:
-            errors.append("A descrição é obrigatória.")
-        if not valor:
-            errors.append("O valor é obrigatório.")
-        else:
-            try:
-                valor = float(valor)
-            except ValueError:
-                errors.append("O valor deve ser numérico.")
-        if not date_str:
-            errors.append("A data é obrigatória.")
-
-        
-        if not errors:
-            Saidas.objects.create(
-                descricao=selected_descricao,
-                valor=valor,
-                date=date_str,
-                owner=request.user
-            )
-            
-            
-            Saldo.criar_registro_saldo_apos_transacao(request.user)
-            
-            return redirect("saidas")
-
-    context = {
-        "errors": errors,
-        "opcoes_descricao": Saidas.OPCOES_DESCRICAO,
-        "selected_descricao": selected_descricao,
-        "valor": valor,
-        "date": date_str
-    }
-    return render(request, "app1/html/saidas.html", context)
-
-@login_required
-def extrato_views(request):
-    entradas=Entradas.objects.filter(owner=request.user).order_by('-date')
-    saidas=Saidas.objects.filter(owner=request.user).order_by('-date')
-    context={'entradas':entradas,'saidas':saidas}
-    return render(request,'app1/html/extrato.html',context)
-
-@login_required
-def nav_view(request):
-    
-    try:
-        
-        saldo = Saldo.objects.filter(owner=request.user).latest('data_registro')
-    except Saldo.DoesNotExist:
-        
-        saldo = Saldo(owner=request.user, valor=0.0)
-        
-    context={'saldo': saldo}
-    return render(request,'app1/html/nav.html',context)
-
-@login_required
-def dashboard(request):
-
-    ano = datetime.date.today().year
-    mes = datetime.date.today().month
-
-    
-    saldos_anuais = []
-    for m in range(1, 13):
-        try:
-            ultimo_saldo = Saldo.objects.filter(owner=request.user, data_registro__year=ano, data_registro__month=m).latest('data_registro')
-            saldos_anuais.append(float(ultimo_saldo.valor))
-        except Saldo.DoesNotExist:
-            saldos_anuais.append(0.0)
-
-    meses_rotulos = [f"Mês {m}" for m in range(1, 13)]
-    saldo_positivo = [s if s > 0 else 0 for s in saldos_anuais]
-    saldo_negativo = [abs(s) if s < 0 else 0 for s in saldos_anuais]
-    saldo_liquido = saldos_anuais
-
-    
-    entradas = Entradas.objects.filter(owner=request.user, date__year=ano, date__month=mes).aggregate(Sum("valor"))["valor__sum"] or 0
-    saidas = Saidas.objects.filter(owner=request.user, date__year=ano, date__month=mes).aggregate(Sum("valor"))["valor__sum"] or 0
+from django.test import TestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.urls import reverse
+from django.contrib.auth.models import User
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support import expected_conditions as EC
+from .models import Entradas, Saidas, Saldo
+import time
+import os
+import glob
+import pdfplumber
 
 
-    saidas_por_categoria = Saidas.objects.filter(owner=request.user, date__year=ano, date__month=mes).values("descricao").annotate(total=Sum("valor"))
+# ==========================================================
+# TESTES BASE
+# ==========================================================
 
-    context = {
-        "ano": ano,
-        "mes": mes,
-        "meses_rotulos": json.dumps(meses_rotulos),
-        "saldo_positivo": json.dumps(saldo_positivo),
-        "saldo_negativo": json.dumps(saldo_negativo),
-        "saldo_liquido": json.dumps(saldo_liquido),
-        "entradas": float(entradas),
-        "saidas": float(saidas),
-        "saidas_por_categoria": saidas_por_categoria,
-    }
-    return render(request, "app1/html/dashboard.html", context)
+class Teste_base(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
 
-@login_required
-def exportar_csv(request):
-    #aq esta lendo o banco
-    entradas = Entradas.objects.filter(owner=request.user).order_by('date')
-    saidas = Saidas.objects.filter(owner=request.user).order_by('date')
-    saldos = Saldo.objects.filter(owner=request.user).order_by('data_registro')
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        self.usuario = User.objects.create_user(username="pedro", password="123456")
+        self.client.login(username="pedro", password="123456")
+
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
+
+    def tearDown(self):
+        self.navegador.quit()
+
+    def test_cabecalho_links_usuario_logado(self):
+        url = self.live_server_url + reverse("nav")
+        self.navegador.get(url)
+        cabecalho = self.espera.until(EC.presence_of_element_located((By.CLASS_NAME, "main-header")))
+        self.assertTrue(cabecalho.is_displayed())
+        texto = cabecalho.text
+        self.assertIn("Olá, pedro", texto)
+        self.assertIn("SAIR", texto)
+        self.assertNotIn("ENTRAR", texto)
 
 
-    transacoes = []
-    # aq esta juntando as entradas e saidas em uma unica lista em forma de dicionario
-    for e in entradas:
-        transacoes.append({
-            'tipo': 'Entrada',
-            'descricao': e.descricao,
-            'valor': e.valor,
-            'data': e.date,
+# ==========================================================
+# TESTES DE ENTRADAS
+# ==========================================================
+
+class Teste_entradas(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
+
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
+
+    def tearDown(self):
+        self.navegador.quit()
+
+    def preencher_formulario(self, descricao, valor, data):
+        self.navegador.get(self.live_server_url + reverse("entradas"))
+        campo_desc = self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
+        campo_valor = self.navegador.find_element(By.ID, "id_valor")
+        campo_data = self.navegador.find_element(By.ID, "id_date")
+        botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+
+        campo_desc.clear()
+        campo_valor.clear()
+        campo_data.clear()
+        campo_desc.send_keys(descricao)
+        campo_valor.send_keys(str(valor))
+        campo_data.send_keys(data)
+        botao_enviar.click()
+        time.sleep(1)  # garante que o POST foi processado
+
+    def test_formulario_nova_receita_visivel(self):
+        self.navegador.get(self.live_server_url + reverse("entradas"))
+        for campo_id in ["id_descricao", "id_valor", "id_date"]:
+            elemento = self.espera.until(EC.presence_of_element_located((By.ID, campo_id)))
+            self.assertTrue(elemento.is_displayed())
+        botao = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        self.assertTrue(botao.is_displayed())
+
+    def test_enviar_receita_cria_objeto(self):
+        self.preencher_formulario("Salário", 5000, "2025-10-22")
+        self.assertTrue(Entradas.objects.filter(descricao="Salário", owner=self.usuario).exists())
+
+    def test_abas_receita_despesa_visiveis(self):
+        self.navegador.get(self.live_server_url + reverse("entradas"))
+        abas = self.navegador.find_elements(By.CLASS_NAME, "tab")
+        textos = [aba.text for aba in abas]
+        if abas:
+            self.assertIn("Receita", textos)
+            self.assertIn("Despesas", textos)
+            for aba in abas:
+                self.assertTrue(aba.is_displayed())
+
+
+# ==========================================================
+# TESTES DE SAÍDAS
+# ==========================================================
+
+class Teste_saidas(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
+
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
+
+    def tearDown(self):
+        self.navegador.quit()
+
+    def preencher_formulario_saida(self, descricao, valor, data):
+        self.navegador.get(self.live_server_url + reverse("saidas"))
+        campo_desc = Select(self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
+        campo_desc.select_by_visible_text(descricao)
+
+        campo_valor = self.navegador.find_element(By.ID, "id_valor")
+        campo_data = self.navegador.find_element(By.ID, "id_date")
+        botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+
+        campo_valor.clear()
+        campo_data.clear()
+        campo_valor.send_keys(str(valor))
+        campo_data.send_keys(data)
+        botao_enviar.click()
+        time.sleep(1)  # garante que o POST foi processado
+
+    def test_enviar_saida_cria_objeto(self):
+        self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
+        self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
+
+
+# ==========================================================
+# TESTES DE EXTRATO
+# ==========================================================
+
+class Teste_extrato(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
+
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
+
+        Entradas.objects.create(descricao="Venda", valor=200, date="2025-10-18", owner=self.usuario)
+        Saidas.objects.create(descricao="Compra", valor=100, date="2025-10-18", owner=self.usuario)
+
+    def tearDown(self):
+        self.navegador.quit()
+
+    def test_extrato_exibe_transacoes_visiveis(self):
+        self.navegador.get(self.live_server_url + reverse("extrato"))
+        container = self.espera.until(EC.presence_of_element_located((By.CLASS_NAME, "extrato-container")))
+        self.assertTrue(container.is_displayed())
+        self.assertIn("Venda", container.text)
+        self.assertIn("Compra", container.text)
+
+
+# ==========================================================
+# TESTES DE DASHBOARD
+# ==========================================================
+
+class Teste_dashboard(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
+
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
+
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
+
+        Saldo.objects.create(owner=self.usuario, valor=500)
+
+    def tearDown(self):
+        self.navegador.quit()
+
+    def test_dashboard_graficos_e_totais_visiveis(self):
+        self.navegador.get(self.live_server_url + reverse("dashboard"))
+        body = self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        self.assertTrue(body.is_displayed())
+        html = body.get_attribute("innerHTML")
+        self.assertIn("500", html)
+
+
+# ==========================================================
+# TESTES DE EXPORTAÇÃO (CSV/PDF)
+# ==========================================================
+
+class TesteExtracao(StaticLiveServerTestCase):
+    DOWNLOAD_DIR = os.path.join(os.getcwd(), "test_downloads")
+
+    @staticmethod
+    def extrair_texto_pdf(caminho_arquivo):
+        texto = ""
+        with pdfplumber.open(caminho_arquivo) as pdf:
+            for pagina in pdf.pages:
+                texto += pagina.extract_text() or ""
+        return texto
+
+    def setUp(self):
+        os.makedirs(self.DOWNLOAD_DIR, exist_ok=True)
+
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+        opcoes.add_experimental_option("prefs", {
+            "download.default_directory": self.DOWNLOAD_DIR,
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True
         })
-    # faz o mesmo para as saidas
-    for s in saidas:
-        transacoes.append({
-            'tipo': 'Saída',
-            'descricao': s.descricao,
-            'valor': -s.valor,  
-            'data': s.date,
-        })
 
-    
-    transacoes.sort(key=lambda t: t['data'])#ordena pela data
+        self.navegador = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.navegador, 10)
 
-    def get_saldo_por_data(data_transacao):# vai checar se tem um saldo para cada transacao pela data 
-        saldo_registros = saldos.filter(data_registro__lte=data_transacao).order_by('-data_registro')
-        if saldo_registros.exists():
-            return saldo_registros.first().valor
-        return None  
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
+        cookie = self.client.cookies["sessionid"]
+        self.navegador.get(self.live_server_url)
+        self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
+        self.navegador.refresh()
 
-    response = HttpResponse(content_type='text/csv')# criando o arquivo csv
-    response['Content-Disposition'] = 'attachment; filename="extrato.csv"'# nome do arquivo
+        Entradas.objects.create(descricao="Venda", valor=200, date="2025-10-18", owner=self.usuario)
+        Saidas.objects.create(descricao="Compra", valor=100, date="2025-10-18", owner=self.usuario)
 
-    writer = csv.writer(response) # criando o escritor do csv
-    writer.writerow(['Tipo', 'Descrição', 'Valor', 'Data', 'Saldo'])#escreve na primeira linha isso
+    def tearDown(self):
+        self.navegador.quit()
+        arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*"))
+        for arquivo in arquivos:
+            os.remove(arquivo)
 
-   # escreve linha por linha no csv, pegando cada item pela chaave do dicionario
-    for t in transacoes:
-        saldo_valor = get_saldo_por_data(t['data'])
-        writer.writerow([
-            t['tipo'],
-            t['descricao'],
-            f"{t['valor']:.2f}",
-            t['data'].strftime("%d/%m/%Y"),
-            f"{saldo_valor:.2f}" if saldo_valor is not None else "-"
-        ])
-
-    return response
-
-@login_required
-def exportar_pdf(request):
-    entradas=Entradas.objects.filter(owner=request.user).order_by('date')
-    saidas=Saidas.objects.filter(owner=request.user).order_by('date')
-    saldos=Saldo.objects.filter(owner=request.user).order_by('data_registro')
-
-    transacoes=[]
-    for e in entradas:
-        transacoes.append({
-            'tipo': 'Entrada',
-            'descricao': e.descricao,
-            'valor': e.valor,
-            'data': e.date,
-        })
-    for s in saidas:
-        transacoes.append({
-            'tipo': 'Saída',
-            'descricao': s.descricao,
-            'valor': -s.valor,  
-            'data': s.date,
-        })
-    
-    transacoes.sort(key=lambda t: t['data'])
-
-    def get_saldo_por_data(data_transacao):# vai checar se tem um saldo para cada transacao pela data 
-        saldo_registros = saldos.filter(data_registro__lte=data_transacao).order_by('-data_registro')
-        if saldo_registros.exists():
-            return saldo_registros.first().valor
-        return None 
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="extrato.pdf"'
-    
-    #parte da logica que se distingue do csv
-    # criando o pdf
-    p = canvas.Canvas(response, pagesize=A4)
-    largura, altura = A4
-    
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(2*cm, altura - 2*cm, "Extrato Financeiro")
-    p.setFont("Helvetica", 12)
-    p.drawString(2*cm, altura - 2.7*cm, f"Usuário: {request.user.username}")
-
-    y = altura - 4*cm
-    p.setFont("Helvetica-Bold", 11)
-    p.drawString(2*cm, y, "Tipo")
-    p.drawString(5*cm, y, "Descrição")
-    p.drawString(11*cm, y, "Valor (R$)")
-    p.drawString(15*cm, y, "Data")
-    p.drawString(18*cm, y, "Saldo")
-    y -= 0.5*cm
-    p.line(2*cm, y, 20*cm, y)
-    y -= 0.5*cm
-    p.setFont("Helvetica", 10)
-    for t in transacoes:
-        saldo_valor = get_saldo_por_data(t['data'])
-        
-        if y < 3*cm:
-            p.showPage()
-            y = altura - 3*cm
-            p.setFont("Helvetica", 10)
-
-        p.drawString(2*cm, y, t['tipo'])
-        p.drawString(5*cm, y, str(t['descricao'])[:30])
-        p.drawRightString(13.5*cm, y, f"{t['valor']:.2f}")
-        p.drawString(15*cm, y, t['data'].strftime("%d/%m/%Y"))
-        p.drawRightString(20*cm, y, f"{saldo_valor:.2f}" if saldo_valor is not None else "-")
-        y -= 0.6*cm
-
-    p.setFont("Helvetica-Oblique", 9)
-    p.drawString(2*cm, 1.5*cm, "Gerado automaticamente pelo sistema.")
-    p.showPage()
-    p.save()
-
-    return response
