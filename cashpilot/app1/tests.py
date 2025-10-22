@@ -28,10 +28,10 @@ class Teste_base(StaticLiveServerTestCase):
         self.espera = WebDriverWait(self.navegador, 10)
 
         self.usuario = User.objects.create_user(username="pedro", password="123456")
-        self.client.login(username="pedro", password="123456")
+        self.client.force_login(self.usuario)
 
-        cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
+        cookie = self.client.cookies["sessionid"]
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
         self.navegador.refresh()
 
@@ -64,10 +64,10 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.espera = WebDriverWait(self.navegador, 10)
 
         self.usuario = User.objects.create_user(username="teste", password="123456")
-        self.client.login(username="teste", password="123456")
+        self.client.force_login(self.usuario)
 
-        cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
+        cookie = self.client.cookies["sessionid"]
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
         self.navegador.refresh()
 
@@ -89,8 +89,8 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-        # ✅ Espera os campos ficarem vazios após o envio
-        self.espera.until(lambda driver: 
+        # espera os campos ficarem vazios após o envio
+        self.espera.until(lambda driver:
             driver.find_element(By.ID, "id_descricao").get_attribute("value") == "" and
             driver.find_element(By.ID, "id_valor").get_attribute("value") == "" and
             driver.find_element(By.ID, "id_date").get_attribute("value") == ""
@@ -134,10 +134,10 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.espera = WebDriverWait(self.navegador, 10)
 
         self.usuario = User.objects.create_user(username="teste", password="123456")
-        self.client.login(username="teste", password="123456")
+        self.client.force_login(self.usuario)
 
-        cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
+        cookie = self.client.cookies["sessionid"]
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
         self.navegador.refresh()
 
@@ -159,8 +159,8 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-        # ✅ Espera os campos ficarem vazios após o envio
-        self.espera.until(lambda driver: 
+        # espera os campos ficarem vazios após o envio
+        self.espera.until(lambda driver:
             driver.find_element(By.ID, "id_valor").get_attribute("value") == "" and
             driver.find_element(By.ID, "id_date").get_attribute("value") == ""
         )
@@ -168,6 +168,7 @@ class Teste_saidas(StaticLiveServerTestCase):
     def test_enviar_saida_cria_objeto(self):
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
         self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
+
 
 # ==========================================================
 # TESTES DE EXTRATO
