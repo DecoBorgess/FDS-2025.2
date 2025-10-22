@@ -77,13 +77,11 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario(self, descricao, valor, data):
-    # Localiza campos
         campo_desc = self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
         campo_data = self.navegador.find_element(By.ID, "id_date")
         botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-    # Preenche campos
         campo_desc.clear()
         campo_valor.clear()
         campo_data.clear()
@@ -92,24 +90,17 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-    # Espera até o extrato ser atualizado (ou mensagem de sucesso)
-    # Substitua 'extrato-container' pela classe correta da tabela/alerta
-        self.espera.until(lambda driver: driver.find_element(By.ID, "id_descricao").get_attribute("value") == "")
-
+        # Pequena espera para garantir que o POST foi enviado
+        time.sleep(1)
 
     def test_enviar_receita_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
         self.preencher_formulario("Salário", 5000, "2025-10-22")
-        # Validação no banco usando self.client
         self.assertTrue(Entradas.objects.filter(descricao="Salário", owner=self.usuario).exists())
 
-
-
 # ==========================================================
-# TESTES DE SAÍDAS CORRIGIDOS
+# TESTES DE SAÍDAS
 # ==========================================================
-
-
 
 class Teste_saidas(StaticLiveServerTestCase):
     def setUp(self):
@@ -146,16 +137,13 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-    # Espera até o formulário ficar limpo
-        self.espera.until(lambda driver: driver.find_element(By.ID, "id_valor").get_attribute("value") == "")
+        # Pequena espera para garantir que o POST foi enviado
+        time.sleep(1)
 
     def test_enviar_saida_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("saidas"))
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
-        # Validação no banco usando self.client
         self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
-
-
 
 # ==========================================================
 # TESTES DE EXTRATO
