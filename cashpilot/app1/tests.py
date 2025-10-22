@@ -94,7 +94,7 @@ class Teste_entradas(StaticLiveServerTestCase):
 
     # Espera até o extrato ser atualizado (ou mensagem de sucesso)
     # Substitua 'extrato-container' pela classe correta da tabela/alerta
-        self.espera.until(EC.presence_of_element_located((By.CLASS_NAME, "extrato-container")))
+        self.espera.until(lambda driver: driver.find_element(By.ID, "id_descricao").get_attribute("value") == "")
 
 
     def test_enviar_receita_cria_objeto(self):
@@ -133,7 +133,6 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario_saida(self, descricao, valor, data):
-    # Campo de descrição é um select
         campo_desc = Select(self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
         campo_desc.select_by_visible_text(descricao)
 
@@ -141,16 +140,14 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_data = self.navegador.find_element(By.ID, "id_date")
         botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-    # Preenche valor e data
         campo_valor.clear()
         campo_data.clear()
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
 
-    # Espera até o extrato ser atualizado (ou mensagem de sucesso)
-        self.espera.until(EC.presence_of_element_located((By.CLASS_NAME, "extrato-container")))
-
+    # Espera até o formulário ficar limpo
+        self.espera.until(lambda driver: driver.find_element(By.ID, "id_valor").get_attribute("value") == "")
 
     def test_enviar_saida_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("saidas"))
