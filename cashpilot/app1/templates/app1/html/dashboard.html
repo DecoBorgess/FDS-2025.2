@@ -1,160 +1,76 @@
 {% extends "app1/html/base.html" %}
 {% block content %}
+<h2 style="text-align:center; margin-bottom:30px;">Dashboard Financeiro - Ano {{ ano }}</h2>
 
-<h2 style="text-align:center; margin-bottom:30px;color:white;">
-  Análise do Saldo Mensal (Final do Mês) - Ano {{ ano }}
-</h2>
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
 
-<!-- ELEMENTOS PARA TESTES SELENIUM -->
-<div id="saldo_positivo" style="display:none;">{{ saldo_positivo }}</div>
-<div id="saldo_negativo" style="display:none;">{{ saldo_negativo }}</div>
-<div class="saldo-valor" style="text-align:center; color:white; font-size:22px; margin-bottom:25px;">
-  Saldo Atual: {{ saldo.valor|default:"0" }}
-</div>
+    <div style="background:#fff; padding:20px; border-radius:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <canvas id="graficoSaldoPositivo"></canvas>
+    </div>
 
-<div class="grid-container">
-  <!-- 1º gráfico: Positivo vs Negativo -->
-  <div class="chart-card">
-    <canvas id="saldoChart1"></canvas>
-  </div>
+    <div style="background:#fff; padding:20px; border-radius:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <canvas id="graficoSaldoNegativo"></canvas>
+    </div>
 
-  <!-- 2º gráfico: Saldo Líquido -->
-  <div class="chart-card">
-    <canvas id="saldoChart2"></canvas>
-  </div>
+    <div style="background:#fff; padding:20px; border-radius:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <canvas id="graficoSaldoLiquido"></canvas>
+    </div>
 
-  <!-- 3º gráfico: Entradas vs Saídas -->
-  <div class="chart-card">
-    <canvas id="saldoChart3"></canvas>
-  </div>
+    <div style="background:#fff; padding:20px; border-radius:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <canvas id="graficoEntradasSaidas"></canvas>
+    </div>
 
-  <!-- 4º gráfico: Saídas por Categoria -->
-  <div class="chart-card">
-    <canvas id="saldoChart4"></canvas>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-    },
-    scales: { y: { beginAtZero: true } }
-  };
+    const meses = {{ meses_rotulos|safe }};
+    const saldoPositivo = {{ saldo_positivo|safe }};
+    const saldoNegativo = {{ saldo_negativo|safe }};
+    const saldoLiquido = {{ saldo_liquido|safe }};
+    const entradasSaidasData = [{{ entradas }}, {{ saidas }}];  // Entradas e Saídas
 
-  // 1º gráfico - Positivo vs Negativo
-  const dataPosNeg = {
-    labels: {{ meses_rotulos|safe }},
-    datasets: [
-      { label: 'Positivo', data: {{ saldo_positivo|safe }}, backgroundColor: 'green' },
-      { label: 'Negativo', data: {{ saldo_negativo|safe }}, backgroundColor: 'red' }
-    ]
-  };
-  new Chart(document.getElementById('saldoChart1'), { 
-    type: 'bar', 
-    data: dataPosNeg, 
-    options: { ...options, plugins: { title: { display:true, text:'Saldo Mensal (Positivo vs Negativo)' } } }
-  });
+    // Gráfico Saldo Positivo
+    new Chart(document.getElementById('graficoSaldoPositivo'), {
+        type: 'bar',
+        data: { labels: meses, datasets: [{ label: 'Saldo Positivo', data: saldoPositivo, backgroundColor: 'rgba(75, 192, 192, 0.6)' }] },
+        options: { responsive: true, plugins: { legend: { display: true } } }
+    });
 
-  // 2º gráfico - Saldo Líquido
-  const dataLiquido = {
-    labels: {{ meses_rotulos|safe }},
-    datasets: [
-      { 
-        label: 'Saldo Líquido', 
-        data: {{ saldo_liquido|safe }},
-        backgroundColor: {{ saldo_liquido|safe }}.map(v => v >= 0 ? 'green' : 'red')
-      }
-    ]
-  };
-  new Chart(document.getElementById('saldoChart2'), { 
-    type: 'bar', 
-    data: dataLiquido, 
-    options: { ...options, plugins: { title: { display:true, text:'Saldo Mensal (Líquido)' } } }
-  });
+    // Gráfico Saldo Negativo
+    new Chart(document.getElementById('graficoSaldoNegativo'), {
+        type: 'bar',
+        data: { labels: meses, datasets: [{ label: 'Saldo Negativo', data: saldoNegativo, backgroundColor: 'rgba(255, 99, 132, 0.6)' }] },
+        options: { responsive: true }
+    });
 
-  // 3º gráfico - Entradas vs Saídas
-  const dataEntradasSaidas = {
-    labels: ['Entradas', 'Saídas'],
-    datasets: [
-      {
-        label: Entradas e Saídas - {{ mes }}/{{ ano }},
-        data: [{{ entradas }}, {{ saidas }}],
-        backgroundColor: ['green', 'red'],
-      }
-    ]
-  };
-  new Chart(document.getElementById('saldoChart3'), { 
-    type: 'bar',
-    data: dataEntradasSaidas,
-    options: { 
-      ...options,
-      plugins: { title: { display:true, text:'Entradas e Saídas (Mês Atual)' }, legend: { display:false } }
-    }
-  });
+    // Gráfico Saldo Líquido
+    new Chart(document.getElementById('graficoSaldoLiquido'), {
+        type: 'line',
+        data: { labels: meses, datasets: [{ label: 'Saldo Líquido', data: saldoLiquido, borderColor: 'rgba(54, 162, 235, 0.8)', backgroundColor: 'rgba(54, 162, 235, 0.3)', fill: true, tension: 0.3 }] },
+        options: { responsive: true }
+    });
 
-  // 4º gráfico - Saídas por Categoria
-  const categorias = [
-    {% for item in saidas_por_categoria %}
-      "{{ item.descricao }}"{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
-
-  const valores = [
-    {% for item in saidas_por_categoria %}
-      {{ item.total }}{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
-
-  const dataSaidasCategoria = {
-    labels: categorias,
-    datasets: [
-      {
-        label: Saídas por Categoria - {{ mes }}/{{ ano }},
-        data: valores,
-        backgroundColor: 'red'
-      }
-    ]
-  };
-
-  new Chart(document.getElementById('saldoChart4'), {
-    type: 'bar',
-    data: dataSaidasCategoria,
-    options: { 
-      responsive: true,
-      plugins: { title: { display:true, text:'Saídas por Categoria' }, legend: { display:false } },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
+    // Gráfico Entradas vs Saídas (barra)
+    new Chart(document.getElementById('graficoEntradasSaidas'), {
+        type: 'bar',
+        data: {
+            labels: ['Entradas', 'Saídas'],
+            datasets: [{
+                label: 'Valor',
+                data: entradasSaidasData,
+                backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 </script>
-
-<style>
-  .grid-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 20px;
-    width: 95%;
-    margin: auto;
-    height: 85vh;
-  }
-
-  .chart-card {
-    background: #e0e0e0;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  canvas {
-    max-width: 100% !important;
-    max-height: 100% !important;
-  }
-</style>
-
-{% endblock content %}
+{% endblock %}
