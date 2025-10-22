@@ -1,4 +1,4 @@
-{% extends "app1/html/base.html" %}
+]{% extends "app1/html/base.html" %}
 {% block content %}
 
 <div class="extrato-container">
@@ -30,12 +30,14 @@
     </tbody>
   </table>
 
-  <button id="botao_exportar_csv">Exportar CSV</button>
-  <button id="botao_exportar_pdf">Exportar PDF</button>
+  <form action="{% url 'csv' %}" method="get">
+      <button type="submit" class="btn csv">Exportar CSV</button>
+  </form>
+
+  <form action="{% url 'pdf' %}" method="get">
+      <button type="submit" class="btn pdf">Exportar PDF</button>
+  </form>
 </div>
-
-
-
 
 <!-- ESTILOS -->
 <style>
@@ -63,58 +65,31 @@
         color: #444;
     }
 
-    .movimentacoes-flex {
-        display: flex;
-        gap: 30px;
-        margin-bottom: 30px;
-    }
-
-    .bloco-movimentacao {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .bloco-movimentacao h2 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 18px;
-        color: #555;
-        padding-bottom: 5px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
+    /* --- Tabela de movimentações --- */
     .movimentacoes-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-family: Arial, sans-serif;
     }
 
-    .movimentacoes-list li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
+    .movimentacoes-list th, .movimentacoes-list td {
+        border: 1px solid #ddd;
+        padding: 12px 15px;
+        text-align: left;
     }
 
-    .movimentacoes-list li:last-child {
-        border-bottom: none;
-    }
-
-    .movimentacao-info {
-        display: flex;
-        align-items: center;
-    }
-
-    .movimentacao-info .data {
+    .movimentacoes-list th {
+        background-color: #f2f2f2;
         font-weight: bold;
-        margin-right: 10px;
-        min-width: 85px;
     }
 
-    .movimentacao-info .descricao {
-        color: #555;
-        word-break: break-word;
+    .movimentacoes-list tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .movimentacoes-list tr:hover {
+        background-color: #e9e9e9;
     }
 
     .valor {
@@ -124,64 +99,45 @@
         white-space: nowrap;
     }
 
-    .valor.entrada { color: #28a745; }
-    .valor.saida { color: #dc3545; }
+    .valor.entrada { color: #28a745; } /* verde */
+    .valor.saida { color: #dc3545; }   /* vermelho */
 
-    .saldo-final {
-        text-align: right;
-        margin-top: 30px;
-        font-size: 18px;
-    }
-
-    .saldo-valor {
-        font-weight: bold;
-        color: #007bff;
-        margin-left: 10px;
-    }
-
-    .filler {
-        flex-grow: 1;
-        border-bottom: 2px dotted #ccc;
-        margin: 0 10px;
-        position: relative;
-        bottom: 2px;
-    }
-
-    .print-button-container {
-        text-align: center;
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-
-    .print-button {
-        padding: 12px 25px;
-        background-color: #6c757d;
+    /* --- Botões CSV e PDF --- */
+    button.btn.csv {
+        background-color: #007bff; /* azul */
         color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 16px;
+        padding: 10px 20px;
+        border-radius: 6px;
         cursor: pointer;
+        font-size: 16px;
+        margin: 5px 0;
         transition: background-color 0.3s;
-        margin: 0 5px;
-        text-decoration: none;
-        display: inline-block;
     }
 
-    .print-button:hover { background-color: #5a6268; }
-    .print-button.csv { background-color: #007bff !important; }
-    .print-button.pdf { background-color: #dc3545 !important; }
-
-    .no-data {
-        text-align: center;
-        color: #888;
-        padding: 10px 0;
+    button.btn.csv:hover {
+        background-color: #0056b3;
     }
 
+    button.btn.pdf {
+        background-color: #dc3545; /* vermelho */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 5px 0;
+        transition: background-color 0.3s;
+    }
+
+    button.btn.pdf:hover {
+        background-color: #a71d2a;
+    }
+
+    /* --- Responsividade --- */
     @media (max-width: 900px) {
         .extrato-container { max-width: 95%; }
-        .movimentacoes-flex { flex-direction: column; }
-        .bloco-movimentacao { margin-bottom: 20px; }
     }
 </style>
 
