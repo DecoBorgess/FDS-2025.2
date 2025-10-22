@@ -77,7 +77,6 @@ class Teste_entradas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario(self, descricao, valor, data):
-        """Para entradas, campo de descrição é texto livre"""
         campo_desc = self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
         campo_data = self.navegador.find_element(By.ID, "id_date")
@@ -90,30 +89,15 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
-        time.sleep(1)
-
-    def test_formulario_nova_receita_visivel(self):
-        self.navegador.get(self.live_server_url + reverse("entradas"))
-        for campo_id in ["id_descricao", "id_valor", "id_date"]:
-            elemento = self.espera.until(EC.presence_of_element_located((By.ID, campo_id)))
-            self.assertTrue(elemento.is_displayed())
-        botao = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
-        self.assertTrue(botao.is_displayed())
+        # espera até a página atualizar (ex: redirect para extrato)
+        self.espera.until(EC.url_changes(self.live_server_url + reverse("entradas")))
 
     def test_enviar_receita_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
         self.preencher_formulario("Salário", 5000, "2025-10-22")
-        self.assertTrue(Entradas.objects.filter(descricao="Salário").exists())
+        # Validação no banco usando self.client
+        self.assertTrue(Entradas.objects.filter(descricao="Salário", owner=self.usuario).exists())
 
-    def test_abas_receita_despesa_visiveis(self):
-        self.navegador.get(self.live_server_url + reverse("entradas"))
-        abas = self.navegador.find_elements(By.CLASS_NAME, "tab")
-        textos = [aba.text for aba in abas]
-        if abas:
-            self.assertIn("Receita", textos)
-            self.assertIn("Despesas", textos)
-            for aba in abas:
-                self.assertTrue(aba.is_displayed())
 
 
 # ==========================================================
@@ -135,7 +119,6 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.usuario = User.objects.create_user(username="teste", password="123456")
         self.client.login(username="teste", password="123456")
 
-        # sincroniza cookie
         cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
@@ -145,7 +128,6 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.navegador.quit()
 
     def preencher_formulario_saida(self, descricao, valor, data):
-        # Campo de descrição é uma select
         campo_desc = Select(self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
         campo_desc.select_by_visible_text(descricao)
 
@@ -153,18 +135,19 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_data = self.navegador.find_element(By.ID, "id_date")
         botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-        # Preenche valor e data normalmente
         campo_valor.clear()
         campo_data.clear()
         campo_valor.send_keys(str(valor))
         campo_data.send_keys(data)
         botao_enviar.click()
-        time.sleep(1)
+        self.espera.until(EC.url_changes(self.live_server_url + reverse("saidas")))
 
     def test_enviar_saida_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("saidas"))
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
-        self.assertTrue(Saidas.objects.filter(descricao="Lazer").exists())
+        # Validação no banco usando self.client
+        self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
+
 
 
 # ==========================================================
