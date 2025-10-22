@@ -42,5 +42,16 @@
   </form>
 </div>
 
-{% endblock content %}
+<!-- Adicionado: container de transações (necessário para Selenium) -->
+<div class="lista-transacoes">
+  {% for entrada in entradas %}
+    <div class="transacao">
+      <span class="descricao">{{ entrada.descricao }}</span>
+      <span class="valor">{{ entrada.valor }}</span>
+    </div>
+  {% empty %}
+    <div class="transacao">Nenhuma transação registrada.</div>
+  {% endfor %}
+</div>
 
+{% endblock content %}

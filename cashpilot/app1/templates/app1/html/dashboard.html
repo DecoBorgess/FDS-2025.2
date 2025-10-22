@@ -5,6 +5,13 @@
   Análise do Saldo Mensal (Final do Mês) - Ano {{ ano }}
 </h2>
 
+<!-- ELEMENTOS PARA TESTES SELENIUM -->
+<div id="saldo_positivo" style="display:none;">{{ saldo_positivo }}</div>
+<div id="saldo_negativo" style="display:none;">{{ saldo_negativo }}</div>
+<div class="saldo-valor" style="text-align:center; color:white; font-size:22px; margin-bottom:25px;">
+  Saldo Atual: {{ saldo.valor|default:"0" }}
+</div>
+
 <div class="grid-container">
   <!-- 1º gráfico: Positivo vs Negativo -->
   <div class="chart-card">
@@ -68,12 +75,12 @@
     options: { ...options, plugins: { title: { display:true, text:'Saldo Mensal (Líquido)' } } }
   });
 
-  // 3º gráfico - Entradas vs Saídas do mês atual
+  // 3º gráfico - Entradas vs Saídas
   const dataEntradasSaidas = {
     labels: ['Entradas', 'Saídas'],
     datasets: [
       {
-        label: `Entradas e Saídas - {{ mes }}/{{ ano }}`,
+        label: Entradas e Saídas - {{ mes }}/{{ ano }},
         data: [{{ entradas }}, {{ saidas }}],
         backgroundColor: ['green', 'red'],
       }
@@ -105,7 +112,7 @@
     labels: categorias,
     datasets: [
       {
-        label: `Saídas por Categoria - {{ mes }}/{{ ano }}`,
+        label: Saídas por Categoria - {{ mes }}/{{ ano }},
         data: valores,
         backgroundColor: 'red'
       }
@@ -121,7 +128,6 @@
       scales: { y: { beginAtZero: true } }
     }
   });
-
 </script>
 
 <style>

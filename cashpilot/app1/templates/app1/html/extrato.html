@@ -2,63 +2,42 @@
 {% block content %}
 
 <div class="extrato-container">
-    <h1>Movimentações Financeiras</h1>
+  <h1>Extrato Financeiro</h1>
 
-    <div class="movimentacoes-flex">
+  <table class="movimentacoes-list">
+    <thead>
+      <tr>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entrada in entradas %}
+        <tr>
+          <td>{{ entrada.descricao }}</td>
+          <td class="valor entrada">{{ entrada.valor }}</td>
+          <td>{{ entrada.date }}</td>
+        </tr>
+      {% endfor %}
+      {% for saida in saidas %}
+        <tr>
+          <td>{{ saida.descricao }}</td>
+          <td class="valor saida">{{ saida.valor }}</td>
+          <td>{{ saida.date }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-        <!-- ENTRADAS -->
-        <div class="bloco-movimentacao">
-            <h2>Entradas</h2>
-            <ul class="movimentacoes-list">
-                {% for entrada in entradas %}
-                <li>
-                    <div class="movimentacao-info">
-                        <span class="data">{{ entrada.date|date:"d/m/Y" }}:</span>
-                        <span class="descricao">{{ entrada.descricao }}</span>
-                    </div>
-                    <div class="filler"></div>
-                    <span class="valor entrada">+ {{ entrada.valor|floatformat:2 }}</span>
-                </li>
-                {% empty %}
-                <li class="no-data">Nenhuma entrada registrada.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- SAÍDAS -->
-        <div class="bloco-movimentacao">
-            <h2>Saídas</h2>
-            <ul class="movimentacoes-list">
-                {% for saida in saidas %}
-                <li>
-                    <div class="movimentacao-info">
-                        <span class="data">{{ saida.date|date:"d/m/Y" }}:</span>
-                        <span class="descricao">{{ saida.descricao }}</span>
-                    </div>
-                    <div class="filler"></div>
-                    <span class="valor saida">- {{ saida.valor|floatformat:2 }}</span>
-                </li>
-                {% empty %}
-                <li class="no-data">Nenhuma saída registrada.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-    </div>
-
-    <!-- BOTÕES DE AÇÃO -->
-    <div class="print-button-container">
-        <a id="botao_exportar_csv" href="{% url 'csv' %}" class="print-button csv" id="botao_exportar_csv">
-            📄 Baixar CSV
-        </a>
-        <a id="botao_exportar_pdf" href="{% url 'pdf' %}" class="print-button pdf" id="botao_exportar_pdf">
-            🧾 Baixar PDF
-        </a>
-        <button class="print-button" onclick="window.print()">🖨️ Imprimir Extrato</button>
-    </div>
+  <button id="botao_exportar_csv">Exportar CSV</button>
+  <button id="botao_exportar_pdf">Exportar PDF</button>
 </div>
 
-<!-- ESTILOS LOCAIS -->
+{% endblock content %}
+
+
+<!-- ESTILOS -->
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -147,6 +126,18 @@
 
     .valor.entrada { color: #28a745; }
     .valor.saida { color: #dc3545; }
+
+    .saldo-final {
+        text-align: right;
+        margin-top: 30px;
+        font-size: 18px;
+    }
+
+    .saldo-valor {
+        font-weight: bold;
+        color: #007bff;
+        margin-left: 10px;
+    }
 
     .filler {
         flex-grow: 1;

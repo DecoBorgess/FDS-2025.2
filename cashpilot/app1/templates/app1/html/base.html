@@ -21,18 +21,16 @@
           #000000 50%,
           #FFD700 65%,
           #B8860B 80%);
-      padding-top: 70px;  
+      padding-top: 70px;
     }
 
     header {
       background-color: #181818;
-      /* cinza escuro neutro e elegante */
       color: #fff;
       padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-
       position: fixed;
       top: 0;
       left: 0;
@@ -63,7 +61,6 @@
 
     header nav a:hover {
       color: #FFD700;
-      /* mesmo azul do detalhe */
     }
   </style>
 </head>
@@ -72,28 +69,24 @@
   <header class="main-header">
     <nav class="main-nav">
       <ul>
-        <li><a href={%url 'nav' %}>TELA INICIAL</a></li>
-        <li><a href={% url 'entradas' %}>NOVA RECEITA</a></li>
-        <li><a href={% url 'saidas' %}>NOVA DESPESA</a></li>
-        <li><a href={% url 'dashboard' %}>GRÁFICOS</a></li>
-        <li><a href={%url 'extrato' %}>MOVIMENTAÇÕES FINANCEIRAS</a></li>
-        <li> </li>
-        <li> </li>
+        <li><a href="{% url 'nav' %}" id="link-tela-inicial">TELA INICIAL</a></li>
+        <li><a href="{% url 'entradas' %}" id="link-nova-receita">NOVA RECEITA</a></li>
+        <li><a href="{% url 'saidas' %}" id="link-nova-despesa">NOVA DESPESA</a></li>
+        <li><a href="{% url 'dashboard' %}" id="link-graficos">GRÁFICOS</a></li>
+        <li><a href="{% url 'extrato' %}" id="link-extrato">MOVIMENTAÇÕES FINANCEIRAS</a></li>
 
-        <li> {% if user.is_authenticated %}
-          <span>Olá, {{ user.username }}</span>
-        <li> </li>
-        <li> </li>
-        <li> </li>
-        <li> </li>
-        <a href="{% url 'logout' %}" , class="nav-link">SAIR</a>
+        {% if user.is_authenticated %}
+          <li><span>Olá, {{ user.username }}</span></li>
+          <li><a href="{% url 'logout' %}" class="nav-link">SAIR</a></li>
         {% else %}
-        <a href="{% url 'login' %}" , class="nav-link">ENTRAR</a>
-        {% endif %}</li>
+          <li><a href="{% url 'login' %}" class="nav-link">ENTRAR</a></li>
+        {% endif %}
       </ul>
     </nav>
   </header>
-  {% block content %} {% endblock content%}
-</body>
 
+  <main>
+    {% block content %}{% endblock content %}
+  </main>
+</body>
 </html>

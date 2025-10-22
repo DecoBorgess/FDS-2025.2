@@ -55,4 +55,16 @@
   </form>
 </div>
 
+<!-- Adicionado: container de transações -->
+<div class="lista-transacoes">
+  {% for saida in saidas %}
+    <div class="transacao">
+      <span class="descricao">{{ saida.descricao }}</span>
+      <span class="valor">{{ saida.valor }}</span>
+    </div>
+  {% empty %}
+    <div class="transacao">Nenhuma saída registrada.</div>
+  {% endfor %}
+</div>
+
 {% endblock content %}
