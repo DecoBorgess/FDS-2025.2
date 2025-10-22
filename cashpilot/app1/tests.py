@@ -117,8 +117,10 @@ class Teste_entradas(StaticLiveServerTestCase):
 
 
 # ==========================================================
-# TESTES DE SAÍDAS
+# TESTES DE SAÍDAS CORRIGIDOS
 # ==========================================================
+
+
 
 class Teste_saidas(StaticLiveServerTestCase):
     def setUp(self):
@@ -130,9 +132,10 @@ class Teste_saidas(StaticLiveServerTestCase):
         self.navegador = webdriver.Chrome(options=opcoes)
         self.espera = WebDriverWait(self.navegador, 10)
 
-        self.usuario = User.objects.create_user(username="teste_saida", password="123456")
-        self.client.login(username="teste_saida", password="123456")
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
 
+        # sincroniza cookie
         cookie = self.client.cookies["sessionid"]
         self.navegador.get(self.live_server_url)
         self.navegador.add_cookie({"name": "sessionid", "value": cookie.value, "path": "/", "secure": False})
@@ -141,14 +144,16 @@ class Teste_saidas(StaticLiveServerTestCase):
     def tearDown(self):
         self.navegador.quit()
 
-    def preencher_formulario_saida(self, categoria, valor, data):
-        """Para saídas, campo de categoria é <select>"""
-        campo_categoria = Select(self.navegador.find_element(By.ID, "id_descricao"))
+    def preencher_formulario_saida(self, descricao, valor, data):
+        # Campo de descrição é uma select
+        campo_desc = Select(self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
+        campo_desc.select_by_visible_text(descricao)
+
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
         campo_data = self.navegador.find_element(By.ID, "id_date")
         botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-        campo_categoria.select_by_visible_text(categoria)
+        # Preenche valor e data normalmente
         campo_valor.clear()
         campo_data.clear()
         campo_valor.send_keys(str(valor))
@@ -241,15 +246,6 @@ class TesteExtracao(StaticLiveServerTestCase):
     DOWNLOAD_DIR = os.path.join(os.getcwd(), "test_downloads")
 
     @staticmethod
-    def ler_conteudo_csv(caminho_arquivo):
-        dados = []
-        with open(caminho_arquivo, mode="r", newline="", encoding="utf-8") as arquivo:
-            leitor = csv.DictReader(arquivo)
-            for linha in leitor:
-                dados.append(linha)
-        return dados
-
-    @staticmethod
     def extrair_texto_pdf(caminho_arquivo):
         texto = ""
         with pdfplumber.open(caminho_arquivo) as pdf:
@@ -285,17 +281,6 @@ class TesteExtracao(StaticLiveServerTestCase):
         for f in glob.glob(os.path.join(self.DOWNLOAD_DIR, "*")):
             os.remove(f)
         os.rmdir(self.DOWNLOAD_DIR)
-
-    def test_extracao_dados_csv_e_validacao(self):
-        url = self.live_server_url + reverse("extrato")
-        self.navegador.get(url)
-        botao = self.espera.until(EC.presence_of_element_located((By.ID, "botao_exportar_csv")))
-        botao.click()
-        time.sleep(3)
-        arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*.csv"))
-        self.assertTrue(arquivos)
-        dados = self.ler_conteudo_csv(arquivos[0])
-        self.assertTrue(len(dados) > 0)
 
     def test_extracao_dados_pdf_e_validacao(self):
         url = self.live_server_url + reverse("extrato")

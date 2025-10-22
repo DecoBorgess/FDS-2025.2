@@ -38,8 +38,8 @@ def entradas_view(request):
                 errors = f"Erro ao salvar: {e}"
         else:
             errors = "Todos os campos são obrigatórios."
-
-    context = {"errors": errors}
+    entradas = Entradas.objects.filter(owner=request.user).order_by('-date')
+    context = {"errors": errors, "entradas": entradas}
     return render(request, "app1/html/entradas.html", context)
 
 @login_required
