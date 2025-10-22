@@ -15,7 +15,7 @@
 
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       background: linear-gradient(120deg,
           #000000 40%,
           #000000 50%,
@@ -85,8 +85,11 @@
     </nav>
   </header>
 
-  <main>
-    {% block content %}{% endblock content %}
-  </main>
+  <!-- div englobando todo o conteúdo, mantém o main-header visível para o Selenium -->
+  <div class="content-wrapper">
+    <main>
+      {% block content %}{% endblock content %}
+    </main>
+  </div>
 </body>
 </html>

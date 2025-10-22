@@ -126,8 +126,8 @@ class Teste_entradas(StaticLiveServerTestCase):
 class Teste_saidas(Teste_entradas):
     def test_enviar_saida_cria_objeto(self):
         self.navegador.get(self.live_server_url + reverse("saidas"))
-        self.preencher_formulario("Conta de luz", 300, "2025-10-22")
-        self.assertTrue(Saidas.objects.filter(descricao="Conta de luz").exists())
+        self.preencher_formulario("Lazer", 300, "2025-10-22")
+        self.assertTrue(Saidas.objects.filter(descricao="Lazer").exists())
 
 
 # ==========================================================
