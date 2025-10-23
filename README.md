@@ -149,8 +149,13 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
       <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
   </a>
     
-  <a href="https://youtu.be/fAFpzl_m-mw">
-    <img src="https://img.shields.io/badge/Screencast-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+  <a href="https://youtu.be/UDhSIrb-RbE">
+    <img src="https://img.shields.io/badge/Screencast Testes-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
+
+  <a href="https://youtu.be/9ib3RHp9JLE">
+    <img src="https://img.shields.io/badge/Screencast Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
     
   </a>
 
