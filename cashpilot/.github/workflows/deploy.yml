@@ -10,27 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
+      # 1️⃣ Pega o código do repositório
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-    - name: Testar aplicação
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        python manage.py test
-
-    - name: Deploy para EC2 via SSH
-      uses: appleboy/ssh-action@v1.2.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }}
-        script: |
-          cd /home/${{ secrets.EC2_USER }}/CashPilot
-          git pull origin main
+      # 2️⃣ Configura e testa o projeto localmente
+      - name: Testar aplicação
+        run: |
+          python -m venv venv
           source venv/bin/activate
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          python manage.py migrate --noinput
-          python manage.py collectstatic --noinput
-          sudo systemctl restart gunicorn
-          sudo systemctl restart nginx
+          python manage.py test
+
+      # 3️⃣ Deploy na EC2 via SSH
+      - name: Deploy para EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          script: |
+            # entra na pasta do projeto
+            cd /home/${{ secrets.EC2_USER }}/CashPilot
+
+            # atualiza o código
+            git reset --hard HEAD
+            git pull origin main
+
+            # ativa virtualenv e instala dependências
+            source venv/bin/activate
+            pip install -r requirements.txt
+
+            # executa migrations e coleta arquivos estáticos
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+
+            # reinicia serviços para aplicar mudanças
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
