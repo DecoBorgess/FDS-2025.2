@@ -38,7 +38,7 @@ O **CashPilot** oferece ferramentas completas para gerenciar suas finanças pess
   <br>
   <br>
   <p align="center">
-   <a href="https://cesarfds.atlassian.net/jira/software/projects/SCRUM/boards/1">
+   <a href="https://projetofdscesar.atlassian.net/jira/software/projects/SCRUM/boards/1">
       <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
     </a>
     <a href="https://youtu.be/O7G3wPW-HjM?si=md9pXXGCMA7W5p4t">
@@ -81,7 +81,7 @@ O **CashPilot** oferece ferramentas completas para gerenciar suas finanças pess
   <br>
   <p align="center">
     
-  <a href="https://cesarfds.atlassian.net/jira/software/projects/SCRUM/boards/1">
+  <a href="https://projetofdscesar.atlassian.net/jira/software/projects/SCRUM/boards/1">
       <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
   </a>
     
@@ -145,7 +145,7 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
   <br>
   <p align="center">
     
-  <a href="https://cesarfds.atlassian.net/jira/software/projects/SCRUM/boards/1">
+  <a href="https://projetofdscesar.atlassian.net/jira/software/projects/SCRUM/boards/1">
       <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
   </a>
     
