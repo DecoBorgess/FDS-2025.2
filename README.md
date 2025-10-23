@@ -168,6 +168,10 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
 
 ![Print do quadro do Jira da entrega 3](fotos_do_readme/QuadroEntrega3.png)
 
+### Bug
+
+![Print dos bugs](fotos_do_readme/issue.png)
+
 ### Deployment:
 
   Nesta terceira etapa, o deploy do CashPilot foi atualizado com novas funcionalidades que aprimoram a experiência do usuário e ampliam as formas de visualização e análise financeira. Agora, é possível visualizar gráficos de evolução financeira, permitindo acompanhar o desempenho ao longo do tempo de maneira clara e intuitiva. Além disso, foi implementada a visualização de extrato financeiro, reunindo as principais informações de receitas e despesas em um só lugar, de forma organizada e acessível. Por fim, foi adicionada a opção de exportar dados em formato CSV ou PDF, possibilitando ao usuário salvar e compartilhar suas movimentações financeiras fora da aplicação.
