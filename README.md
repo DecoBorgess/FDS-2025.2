@@ -154,7 +154,7 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
     
   </a>
 
-  <a href="https://cashpilot-dhawgwfjhvd4fvgu.brazilsouth-01.azurewebsites.net/users/login/">
+  <a href="http://54.84.106.39">
     <img src="https://img.shields.io/badge/Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
     
   </a>
