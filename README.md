@@ -138,7 +138,7 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
    Nesta terceira etapa da entrega, demos continuidade a execução prática do projeto, sendo implementadas as seguintes histórias:
    
    - visualizar gráficos de evolução financeira
-   - visualizar dashboard contendo extratos financeiros
+   - visualizar extrato financeiro
    - exportar dados em CSV ou PDF.
 
   <br>
@@ -165,7 +165,7 @@ Pedro ficou responsável pela criação da base do html, além de ajudar Rodrigo
 
 ### Deployment:
 
-  Nesta terceira etapa, o deploy do CashPilot foi atualizado com novas funcionalidades que aprimoram a experiência do usuário e ampliam as formas de visualização e análise financeira. Agora, é possível visualizar gráficos de evolução financeira, permitindo acompanhar o desempenho ao longo do tempo de maneira clara e intuitiva. Além disso, foi implementado um dashboard com extratos financeiros, reunindo as principais informações de receitas e despesas em um só lugar, de forma organizada e acessível. Por fim, foi adicionada a opção de exportar dados em formato CSV ou PDF, possibilitando ao usuário salvar e compartilhar suas movimentações financeiras fora da aplicação.
+  Nesta terceira etapa, o deploy do CashPilot foi atualizado com novas funcionalidades que aprimoram a experiência do usuário e ampliam as formas de visualização e análise financeira. Agora, é possível visualizar gráficos de evolução financeira, permitindo acompanhar o desempenho ao longo do tempo de maneira clara e intuitiva. Além disso, foi implementada a visualização de extrato financeiro, reunindo as principais informações de receitas e despesas em um só lugar, de forma organizada e acessível. Por fim, foi adicionada a opção de exportar dados em formato CSV ou PDF, possibilitando ao usuário salvar e compartilhar suas movimentações financeiras fora da aplicação.
 
 ### Relato da programação em par:
 
@@ -189,7 +189,7 @@ Bernardo e Luiz Eduardo escreveram o código enquanto André fazia correções e
 Pedro ficou responsável pela criação da base do html. Enquanto isso, Felipe revisou todas as páginas e incrementou elas, melhorando ainda mais o design e funcionalidade de cada uma.
 
 **Membros:**
-- Júlio
+- Júlio Gusmão
 - Vinicius Gomes
 - Rodrigo Paiva
 
