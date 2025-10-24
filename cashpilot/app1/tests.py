@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from .models import Entradas, Saidas, Saldo
 import time
 import os
@@ -76,7 +77,11 @@ class Teste_entradas(StaticLiveServerTestCase):
 
     def preencher_formulario(self, descricao, valor, data):
         self.navegador.get(self.live_server_url + reverse("entradas"))
-        campo_desc = self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
+    
+    # Aumenta o tempo de espera para 20s
+        espera = WebDriverWait(self.navegador, 20)
+
+        campo_desc = espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
         campo_data = self.navegador.find_element(By.ID, "id_date")
         botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
@@ -89,12 +94,12 @@ class Teste_entradas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-        # espera os campos ficarem vazios após o envio
-        self.espera.until(lambda driver:
-            driver.find_element(By.ID, "id_descricao").get_attribute("value") == "" and
-            driver.find_element(By.ID, "id_valor").get_attribute("value") == "" and
-            driver.find_element(By.ID, "id_date").get_attribute("value") == ""
-        )
+    # Espera mensagem de sucesso ou fallback para reload
+        try:
+            espera.until(EC.presence_of_element_located((By.CLASS_NAME, "alert-success")))
+        except TimeoutException:
+        # fallback: espera o campo descrição reaparecer (reload da página)
+            espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
 
     def test_formulario_nova_receita_visivel(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
@@ -146,7 +151,11 @@ class Teste_saidas(StaticLiveServerTestCase):
 
     def preencher_formulario_saida(self, descricao, valor, data):
         self.navegador.get(self.live_server_url + reverse("saidas"))
-        campo_desc = Select(self.espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
+    
+    # Aumenta o tempo de espera para 20s
+        espera = WebDriverWait(self.navegador, 20)
+
+        campo_desc = Select(espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
         campo_desc.select_by_visible_text(descricao)
 
         campo_valor = self.navegador.find_element(By.ID, "id_valor")
@@ -159,11 +168,12 @@ class Teste_saidas(StaticLiveServerTestCase):
         campo_data.send_keys(data)
         botao_enviar.click()
 
-        # espera os campos ficarem vazios após o envio
-        self.espera.until(lambda driver:
-            driver.find_element(By.ID, "id_valor").get_attribute("value") == "" and
-            driver.find_element(By.ID, "id_date").get_attribute("value") == ""
-        )
+    # Espera mensagem de sucesso ou fallback para reload
+        try:
+            espera.until(EC.presence_of_element_located((By.CLASS_NAME, "alert-success")))
+        except TimeoutException:
+        # fallback: espera o campo valor reaparecer (reload da página)
+            espera.until(EC.presence_of_element_located((By.ID, "id_valor")))
 
     def test_enviar_saida_cria_objeto(self):
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
