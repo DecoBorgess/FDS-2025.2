@@ -10,11 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Pega o código do repositório
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # 2️⃣ Configura e testa o projeto localmente
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'  # mesma versão da EC2
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Testar aplicação
         run: |
           python -m venv venv
@@ -23,7 +34,6 @@ jobs:
           pip install -r requirements.txt
           python manage.py test
 
-      # 3️⃣ Deploy na EC2 via SSH
       - name: Deploy para EC2 via SSH
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -32,21 +42,27 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
-            # entra na pasta do projeto
-            cd /home/${{ secrets.EC2_USER }}/CashPilot
+            cd /home/${{ secrets.EC2_USER }}
+            git -C CashPilot fetch origin main
+            git -C CashPilot checkout main
+            git -C CashPilot reset --hard origin/main
 
-            # atualiza o código
-            git reset --hard HEAD
-            git pull origin main
+            # cria venv se não existir
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
 
-            # ativa virtualenv e instala dependências
+            # ativa venv e instala dependências
             source venv/bin/activate
             pip install -r requirements.txt
 
-            # executa migrations e coleta arquivos estáticos
+            # entra no projeto e roda comandos Django
+            cd CashPilot
             python manage.py migrate --noinput
             python manage.py collectstatic --noinput
 
-            # reinicia serviços para aplicar mudanças
-            sudo systemctl restart gunicorn
-            sudo systemctl restart nginx
+            # reinicia os serviços
+            sudo systemctl restart gunicorn.service
+            sudo systemctl restart nginx.service
+
+            echo "✅ Deploy finalizado com sucesso em $(date)"
