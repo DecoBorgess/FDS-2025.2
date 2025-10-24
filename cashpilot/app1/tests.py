@@ -75,31 +75,25 @@ class Teste_entradas(StaticLiveServerTestCase):
     def tearDown(self):
         self.navegador.quit()
 
-    def preencher_formulario(self, descricao, valor, data):
-        self.navegador.get(self.live_server_url + reverse("entradas"))
+def preencher_formulario(self, descricao, valor, data):
+    self.navegador.get(self.live_server_url + reverse("entradas"))
     
-    # Aumenta o tempo de espera para 20s
-        espera = WebDriverWait(self.navegador, 20)
+    espera = WebDriverWait(self.navegador, 20)  # espera maior para estabilidade
+    campo_desc = espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
+    campo_valor = self.navegador.find_element(By.ID, "id_valor")
+    campo_data = self.navegador.find_element(By.ID, "id_date")
+    botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-        campo_desc = espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
-        campo_valor = self.navegador.find_element(By.ID, "id_valor")
-        campo_data = self.navegador.find_element(By.ID, "id_date")
-        botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    campo_desc.clear()
+    campo_valor.clear()
+    campo_data.clear()
+    campo_desc.send_keys(descricao)
+    campo_valor.send_keys(str(valor))
+    campo_data.send_keys(data)
+    botao_enviar.click()
 
-        campo_desc.clear()
-        campo_valor.clear()
-        campo_data.clear()
-        campo_desc.send_keys(descricao)
-        campo_valor.send_keys(str(valor))
-        campo_data.send_keys(data)
-        botao_enviar.click()
-
-    # Espera mensagem de sucesso ou fallback para reload
-        try:
-            espera.until(EC.presence_of_element_located((By.CLASS_NAME, "alert-success")))
-        except TimeoutException:
-        # fallback: espera o campo descrição reaparecer (reload da página)
-            espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
+    # Espera o formulário reaparecer (reload da página)
+    espera.until(EC.presence_of_element_located((By.ID, "id_descricao")))
 
     def test_formulario_nova_receita_visivel(self):
         self.navegador.get(self.live_server_url + reverse("entradas"))
@@ -149,31 +143,26 @@ class Teste_saidas(StaticLiveServerTestCase):
     def tearDown(self):
         self.navegador.quit()
 
-    def preencher_formulario_saida(self, descricao, valor, data):
-        self.navegador.get(self.live_server_url + reverse("saidas"))
+def preencher_formulario_saida(self, descricao, valor, data):
+    self.navegador.get(self.live_server_url + reverse("saidas"))
     
-    # Aumenta o tempo de espera para 20s
-        espera = WebDriverWait(self.navegador, 20)
+    espera = WebDriverWait(self.navegador, 20)  # espera maior para estabilidade
+    campo_desc = Select(espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
+    campo_desc.select_by_visible_text(descricao)
 
-        campo_desc = Select(espera.until(EC.presence_of_element_located((By.ID, "id_descricao"))))
-        campo_desc.select_by_visible_text(descricao)
+    campo_valor = self.navegador.find_element(By.ID, "id_valor")
+    campo_data = self.navegador.find_element(By.ID, "id_date")
+    botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-        campo_valor = self.navegador.find_element(By.ID, "id_valor")
-        campo_data = self.navegador.find_element(By.ID, "id_date")
-        botao_enviar = self.navegador.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    campo_valor.clear()
+    campo_data.clear()
+    campo_valor.send_keys(str(valor))
+    campo_data.send_keys(data)
+    botao_enviar.click()
 
-        campo_valor.clear()
-        campo_data.clear()
-        campo_valor.send_keys(str(valor))
-        campo_data.send_keys(data)
-        botao_enviar.click()
+    # Espera o formulário reaparecer (reload da página)
+    espera.until(EC.presence_of_element_located((By.ID, "id_valor")))
 
-    # Espera mensagem de sucesso ou fallback para reload
-        try:
-            espera.until(EC.presence_of_element_located((By.CLASS_NAME, "alert-success")))
-        except TimeoutException:
-        # fallback: espera o campo valor reaparecer (reload da página)
-            espera.until(EC.presence_of_element_located((By.ID, "id_valor")))
 
     def test_enviar_saida_cria_objeto(self):
         self.preencher_formulario_saida("Lazer", 300, "2025-10-22")
