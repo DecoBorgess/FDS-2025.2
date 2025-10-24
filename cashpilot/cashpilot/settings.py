@@ -14,7 +14,7 @@ NOT_PROD = not TARGET_ENV.lower().startswith('prod')
 if NOT_PROD:
     DEBUG = True
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
