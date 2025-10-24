@@ -195,7 +195,7 @@ Bernardo e Luiz Eduardo escreveram o código enquanto André fazia correções e
 - Felipe Braz
 - Pedro Canel
 
-Pedro ficou responsável pela criação da base do html. Enquanto isso, Felipe revisou todas as páginas e incrementou elas, melhorando ainda mais o design e funcionalidade de cada uma.
+Pedro ficou responsável pela criação da base do html. Enquanto isso, Felipe revisou todas as páginas e incrementou elas, melhorando ainda mais o design e funcionalidade de cada uma. E Felipe ficou responsavel pelo deploy.
 
 **Membros:**
 - Júlio Gusmão
