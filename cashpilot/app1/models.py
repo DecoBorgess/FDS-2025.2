@@ -79,3 +79,18 @@ class Saldo(models.Model):
 
     def _str_(self):
         return f"Saldo de R$ {self.valor} em {self.data_registro.strftime('%Y-%m-%d %H:%M')}"
+    
+class Limite_gasto_mensal(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='limites_gasto_mensal')
+    valor_limite = models.DecimalField(
+        default=0.0,
+        verbose_name="Limite de Gasto Mensal R$",
+        max_digits=15,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+    data_definicao = models.DateTimeField(default=timezone.now, verbose_name="Data/Hora da Definição")
+
+    def _str_(self):
+        return f"Limite de Gasto Mensal de R$ {self.valor_limite} definido em {self.data_definicao.strftime('%Y-%m-%d %H:%M')}"

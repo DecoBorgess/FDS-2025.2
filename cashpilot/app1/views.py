@@ -1,5 +1,6 @@
+import decimal
 from django.shortcuts import render, redirect
-from .models import Entradas,Saidas,Saldo
+from .models import Entradas, Limite_gasto_mensal,Saidas,Saldo
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -9,6 +10,7 @@ import csv
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
+from decimal import Decimal
 
 def index(request):
     return render(request, 'app1/html/index.html')
@@ -48,11 +50,13 @@ def saidas_view(request):
     selected_descricao = ''
     valor = ''
     date_str = ''
+    valor_limite=''
 
     if request.method == "POST":
         selected_descricao = request.POST.get("descricao", "").strip()
         valor = request.POST.get("valor", "").strip()
         date_str = request.POST.get("date", "").strip()
+        valor_limite = request.POST.get("valor_limite", "").strip()
 
         
         if not selected_descricao:
@@ -61,7 +65,7 @@ def saidas_view(request):
             errors.append("O valor é obrigatório.")
         else:
             try:
-                valor = float(valor)
+                valor = Decimal(valor)
             except ValueError:
                 errors.append("O valor deve ser numérico.")
         if not date_str:
@@ -75,6 +79,15 @@ def saidas_view(request):
                 date=date_str,
                 owner=request.user
             )
+            if valor_limite:
+                try:
+                    valor_limite_float=Decimal(valor_limite)
+                    Limite_gasto_mensal.objects.create(
+                        valor_limite=valor_limite_float,
+                        owner=request.user
+                    )
+                except ValueError:
+                    errors.append("O valor limite deve ser numérico.")
             
             
             Saldo.criar_registro_saldo_apos_transacao(request.user)
@@ -101,13 +114,18 @@ def extrato_views(request):
 def nav_view(request):
     
     try:
-        
+        mensagem_alerta = None
+        limite_gasto_mensal= Limite_gasto_mensal.objects.filter(owner=request.user).order_by('-data_definicao').first()
+        soma_das_saidas_mes_atual = Saidas.objects.filter(owner=request.user,date__year=datetime.date.today().year,date__month=datetime.date.today().month).aggregate(Sum('valor'))['valor__sum'] or 0
+        if limite_gasto_mensal is not None and limite_gasto_mensal.valor_limite > 0 and soma_das_saidas_mes_atual > limite_gasto_mensal.valor_limite:
+            mensagem_alerta = f"Atenção: Você excedeu seu limite de gasto mensal de R$ {limite_gasto_mensal.valor_limite:.2f}!"
         saldo = Saldo.objects.filter(owner=request.user).latest('data_registro')
+
     except Saldo.DoesNotExist:
-        
+        limite_gasto_mensal= None
         saldo = Saldo(owner=request.user, valor=0.0)
         
-    context={'saldo': saldo}
+    context={'saldo': saldo, 'mensagem_alerta': mensagem_alerta , 'limite_gasto_mensal': limite_gasto_mensal}
     return render(request,'app1/html/nav.html',context)
 
 @login_required

@@ -44,6 +44,13 @@
                value="{{ date|default:'' }}" required>
       </div>
 
+      <!-- 🔹 Novo campo: Limite de Gasto Mensal -->
+      <div class="form-group" style="grid-column:1/-1;">
+        <label for="id_valor_limite">Limite de Gasto Mensal (opcional)</label>
+        <input class="form-control" type="number" step="0.01" name="valor_limite" id="id_valor_limite"
+               placeholder="Digite o limite de gasto mensal" value="{{ valor_limite|default:'' }}">
+      </div>
+
       <div class="form-divider"></div>
     </div>
 
