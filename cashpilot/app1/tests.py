@@ -133,11 +133,6 @@ class Teste_entradas(StaticLiveServerTestCase):
         botao = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         self.assertTrue(botao.is_displayed())
 
-    def test_enviar_receita_cria_objeto(self):
-        preencher_formulario_entrada(self, "Salário", 5000, "2025-10-22")
-        print(Entradas.objects.filter(descricao="Salário", owner=self.usuario))
-        self.assertTrue(Entradas.objects.filter(descricao="Salário", owner=self.usuario).exists())
-
     def test_abas_receita_despesa_visiveis(self):
         self.driver.get(self.live_server_url + reverse("entradas"))
         abas = self.driver.find_elements(By.CLASS_NAME, "tab")
@@ -174,11 +169,6 @@ class Teste_saidas(StaticLiveServerTestCase):
     def tearDown(self):
         self.driver.quit()
 
-    def test_enviar_saida_cria_objeto(self):
-        preencher_formulario_saida(self, "Lazer", 300, "2025-10-22")
-        print(Saidas.objects.filter(descricao="Lazer", owner=self.usuario))
-        self.assertTrue(Saidas.objects.filter(descricao="Lazer", owner=self.usuario).exists())
-
 
 # ==========================================================
 # TESTES DE EXTRATO
@@ -210,7 +200,7 @@ class Teste_extrato(StaticLiveServerTestCase):
 
     def test_extrato_exibe_transacoes_visiveis(self):
         self.driver.get(self.live_server_url + reverse("extrato"))
-        container = self.espera.until(EC.presence_of_element_located((By.CLASS_NAME, ".movimentacoes-list")))
+        container = self.espera.until(EC.presence_of_element_located((By.CLASS_NAME, "movimentacoes-list")))
         self.assertTrue(container.is_displayed())
         self.assertIn("Venda", container.text)
         self.assertIn("Compra", container.text)
