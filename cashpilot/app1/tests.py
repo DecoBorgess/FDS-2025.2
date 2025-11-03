@@ -287,3 +287,63 @@ class TesteExtracao(StaticLiveServerTestCase):
         arquivos = glob.glob(os.path.join(self.DOWNLOAD_DIR, "*"))
         for arquivo in arquivos:
             os.remove(arquivo)
+
+# ==========================================================
+# TESTE DE ALERTA DE GASTOS (com base no HTML do dashboard)
+# ==========================================================
+
+class Teste_alerta_gastos(StaticLiveServerTestCase):
+    def setUp(self):
+        opcoes = Options()
+        opcoes.add_argument("--headless=new")
+        opcoes.add_argument("--no-sandbox")
+        opcoes.add_argument("--disable-dev-shm-usage")
+
+        self.driver = webdriver.Chrome(options=opcoes)
+        self.espera = WebDriverWait(self.driver, 10)
+
+        # Cria usuário e autentica
+        self.usuario = User.objects.create_user(username="teste", password="123456")
+        self.client.login(username="teste", password="123456")
+
+        # Seta o cookie de sessão no Selenium
+        cookie = self.client.cookies["sessionid"]
+        self.driver.get(self.live_server_url)
+        self.driver.add_cookie({
+            "name": "sessionid",
+            "value": cookie.value,
+            "path": "/",
+            "secure": False
+        })
+        self.driver.refresh()
+
+        # Cria dados que disparam o alerta (saldo negativo, por exemplo)
+        Entradas.objects.create(descricao="Venda", valor=100, date="2025-10-18", owner=self.usuario)
+        Saidas.objects.create(descricao="Compra", valor=400, date="2025-10-18", owner=self.usuario)
+        Saldo.objects.create(owner=self.usuario, valor=-300)
+
+    def tearDown(self):
+        self.driver.quit()
+
+    def test_alerta_de_gastos_exibido(self):
+        """Verifica se o alerta de gastos aparece quando o saldo é negativo ou há alerta configurado."""
+        self.driver.get(self.live_server_url + reverse("dashboard"))
+
+        # Espera o corpo carregar
+        body = self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        self.assertTrue(body.is_displayed())
+
+        # Verifica se o alerta foi renderizado
+        alerta = self.espera.until(
+            EC.presence_of_element_located((By.CLASS_NAME, "alerta-container"))
+        )
+        self.assertTrue(alerta.is_displayed())
+
+        texto_alerta = alerta.text.strip()
+        print("Texto do alerta exibido:", texto_alerta)
+
+        # Garante que o texto realmente indica o alerta de gastos
+        self.assertTrue(
+            any(palavra in texto_alerta.lower() for palavra in ["gasto", "atenção", "alerta", "negativo"]),
+            f"O texto do alerta não parece correto: {texto_alerta}"
+        )

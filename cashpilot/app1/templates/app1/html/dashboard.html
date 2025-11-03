@@ -2,6 +2,13 @@
 {% block content %}
 <h2 style="text-align:center; margin-bottom:30px;">Dashboard Financeiro - Ano {{ ano }}</h2>
 
+{% if mensagem_alerta %}
+<div class="alerta-container alert alert-warning text-center" 
+     style="margin: 0 auto 30px auto; max-width: 800px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 15px; color: #856404;">
+    {{ mensagem_alerta }}
+</div>
+{% endif %}
+
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
 
     <div style="background:#fff; padding:20px; border-radius:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -28,30 +35,26 @@
     const saldoPositivo = {{ saldo_positivo|safe }};
     const saldoNegativo = {{ saldo_negativo|safe }};
     const saldoLiquido = {{ saldo_liquido|safe }};
-    const entradasSaidasData = [{{ entradas }}, {{ saidas }}];  // Entradas e Saídas
+    const entradasSaidasData = [{{ entradas }}, {{ saidas }}];
 
-    // Gráfico Saldo Positivo
     new Chart(document.getElementById('graficoSaldoPositivo'), {
         type: 'bar',
         data: { labels: meses, datasets: [{ label: 'Saldo Positivo', data: saldoPositivo, backgroundColor: 'rgba(75, 192, 192, 0.6)' }] },
         options: { responsive: true, plugins: { legend: { display: true } } }
     });
 
-    // Gráfico Saldo Negativo
     new Chart(document.getElementById('graficoSaldoNegativo'), {
         type: 'bar',
         data: { labels: meses, datasets: [{ label: 'Saldo Negativo', data: saldoNegativo, backgroundColor: 'rgba(255, 99, 132, 0.6)' }] },
         options: { responsive: true }
     });
 
-    // Gráfico Saldo Líquido
     new Chart(document.getElementById('graficoSaldoLiquido'), {
         type: 'line',
         data: { labels: meses, datasets: [{ label: 'Saldo Líquido', data: saldoLiquido, borderColor: 'rgba(54, 162, 235, 0.8)', backgroundColor: 'rgba(54, 162, 235, 0.3)', fill: true, tension: 0.3 }] },
         options: { responsive: true }
     });
 
-    // Gráfico Entradas vs Saídas (barra)
     new Chart(document.getElementById('graficoEntradasSaidas'), {
         type: 'bar',
         data: {

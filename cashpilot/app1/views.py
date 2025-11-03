@@ -130,31 +130,50 @@ def nav_view(request):
 
 @login_required
 def dashboard(request):
-
     ano = datetime.date.today().year
     mes = datetime.date.today().month
 
-    
+    # ======= Cálculo dos saldos mensais (para gráficos) =======
     saldos_anuais = []
     for m in range(1, 13):
         try:
-            ultimo_saldo = Saldo.objects.filter(owner=request.user, data_registro__year=ano, data_registro__month=m).latest('data_registro')
+            ultimo_saldo = Saldo.objects.filter(
+                owner=request.user,
+                data_registro__year=ano,
+                data_registro__month=m
+            ).latest('data_registro')
             saldos_anuais.append(float(ultimo_saldo.valor))
         except Saldo.DoesNotExist:
             saldos_anuais.append(0.0)
 
+    # ======= Alerta de saldo baixo ou negativo =======
+    saldo_atual = Saldo.objects.filter(owner=request.user).order_by('-data_registro').first()
+    mensagem_alerta = None
+    if saldo_atual:
+        if saldo_atual.valor < 0:
+            mensagem_alerta = "⚠️ Atenção: seus gastos estão superando suas receitas!"
+        elif saldo_atual.valor < 100:
+            mensagem_alerta = "💡 Cuidado: seu saldo está ficando baixo."
+
+    # ======= Dados para os gráficos =======
     meses_rotulos = [f"Mês {m}" for m in range(1, 13)]
     saldo_positivo = [s if s > 0 else 0 for s in saldos_anuais]
     saldo_negativo = [abs(s) if s < 0 else 0 for s in saldos_anuais]
     saldo_liquido = saldos_anuais
 
-    
-    entradas = Entradas.objects.filter(owner=request.user, date__year=ano, date__month=mes).aggregate(Sum("valor"))["valor__sum"] or 0
-    saidas = Saidas.objects.filter(owner=request.user, date__year=ano, date__month=mes).aggregate(Sum("valor"))["valor__sum"] or 0
+    entradas = Entradas.objects.filter(
+        owner=request.user, date__year=ano, date__month=mes
+    ).aggregate(Sum("valor"))["valor__sum"] or 0
 
+    saidas = Saidas.objects.filter(
+        owner=request.user, date__year=ano, date__month=mes
+    ).aggregate(Sum("valor"))["valor__sum"] or 0
 
-    saidas_por_categoria = Saidas.objects.filter(owner=request.user, date__year=ano, date__month=mes).values("descricao").annotate(total=Sum("valor"))
+    saidas_por_categoria = Saidas.objects.filter(
+        owner=request.user, date__year=ano, date__month=mes
+    ).values("descricao").annotate(total=Sum("valor"))
 
+    # ======= Contexto para o template =======
     context = {
         "ano": ano,
         "mes": mes,
@@ -165,8 +184,12 @@ def dashboard(request):
         "entradas": float(entradas),
         "saidas": float(saidas),
         "saidas_por_categoria": saidas_por_categoria,
+        "mensagem_alerta": mensagem_alerta,
+        "saldo": saldo_atual,
     }
+
     return render(request, "app1/html/dashboard.html", context)
+
 
 @login_required
 def exportar_csv(request):
