@@ -207,3 +207,34 @@ Ficaram responsáveis pela atualização tanto do Jira, quanto do Readme.
   </p>
 
 </details>
+
+<details>
+  <summary><h2><strong>Entrega 4</strong></h2></summary>
+  <br>
+
+   Na quarta etapa da entrega, finalizando a execução prática do projeto, foi implementada a última história que restava:
+   
+   - Alerta de limite de gastos.
+
+  <br>
+  <br>
+  <p align="center">
+    
+  <a href="https://projetofdscesar.atlassian.net/jira/software/projects/SCRUM/boards/1">
+      <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
+  </a>
+    
+  <a href="https://youtu.be/UDhSIrb-RbE">
+    <img src="https://img.shields.io/badge/Screencast Testes-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
+
+  <a href="https://youtu.be/9ib3RHp9JLE">
+    <img src="https://img.shields.io/badge/Screencast Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
+
+  <a href="http://54.84.106.39">
+    <img src="https://img.shields.io/badge/Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+    
+  </a>
