@@ -238,3 +238,39 @@ Ficaram responsáveis pela atualização tanto do Jira, quanto do Readme.
     <img src="https://img.shields.io/badge/Deployment-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
     
   </a>
+
+  ### Quadro
+
+  ![Print do quadro do Jira da entrega 4](fotos_do_readme/QuadroEntrega4.png)
+
+  ### Deployment:
+
+  Nesta terceira etapa, o deploy do CashPilot foi atualizado com novas funcionalidades. Agora, é possível ficar inteiramente por dentro do seu orçamento por meio de alertas que foram implementados no CashPilot. Dessa forma, nossa ferramenta avisa quando passamos do orçamento planejado com esse alerta. O deploy pode ser visualizado pelo link que está no início da entrega 4 no README.
+
+  ### Programação em par:
+
+  **Dupla:** 
+- Bernardo Leão
+- André Borges
+
+Semelhante a estratégia de trabalho em equipe da entrega 3, a programação em dupla foi feita de tal maneira que Bernardo fez o código enquando André fazia possíveis correções no código.
+
+**Membros:** 
+- Luiz Eduardo
+- Bernardo Leão
+- André Borges
+
+Bernardo e Luiz Eduardo escreveram o código e fizeram os testes, enquanto André fazia correções e dava ideias de melhorias.
+
+**Membros:** 
+- Felipe Braz
+- Pedro Canel
+
+Felipe ficou responsável pela criação da base do html. Enquanto isso, Pedro ajudou na implementação de melhorias.
+
+**Membros:**
+- Júlio Gusmão
+- Vinicius Gomes
+- Rodrigo Paiva
+
+Rodrigo e Vincius ficaram responsáveis pela atualização tanto do Jira, quanto do Readme. Além disso, Júlio fez os screencasts e ajudou a atualizar o README também.
