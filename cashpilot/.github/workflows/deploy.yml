@@ -54,7 +54,7 @@ jobs:
 
             # ativa venv e instala dependências
             source venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r CashPilot/requirements.txt  # <-- corrigido aqui
 
             # entra no projeto e roda comandos Django
             cd CashPilot
@@ -66,3 +66,4 @@ jobs:
             sudo systemctl restart nginx.service
 
             echo "✅ Deploy finalizado com sucesso em $(date)"
+
