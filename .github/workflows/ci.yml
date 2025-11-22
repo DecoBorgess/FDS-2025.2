@@ -29,9 +29,9 @@ jobs:
           echo "DJANGO_SETTINGS_MODULE=cashpilot.settings" >> $GITHUB_ENV
 
       - name: Rodar migrações
-        run: |
-          python manage.py migrate --noinput
+        working-directory: ./cashpilot
+        run: python manage.py migrate --noinput
 
       - name: Rodar testes
-        run: |
-          python manage.py test
+        working-directory: ./cashpilot
+        run: python manage.py test
