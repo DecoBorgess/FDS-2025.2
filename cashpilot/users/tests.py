@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException
 
 # Caminho do ChromeDriver e Chrome
 CHROMEDRIVER_PATH = r"C:\chromedriver_141\chromedriver.exe"
@@ -124,8 +125,21 @@ class Teste_login(StaticLiveServerTestCase):
         campo_senha.send_keys("senhaerrada")
         botao.click()
 
-        self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "p")))
-        mensagem_erro = self.navegador.find_element(By.TAG_NAME, "p").text
+        # Espera o form reaparecer pós reload
+        self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "form")))
+
+        locator = (By.TAG_NAME, "p")
+
+        # Função para tentar pegar o texto sem dar stale
+        def pegar_texto_erro(driver):
+            try:
+                elemento = driver.find_element(*locator)
+                texto = elemento.text
+                return texto if texto.strip() else False
+            except StaleElementReferenceException:
+                return False
+
+        mensagem_erro = self.espera.until(pegar_texto_erro)
         self.assertIn("inválidos", mensagem_erro)
 
     def test_login_falha_campos_vazios(self):
@@ -135,8 +149,5 @@ class Teste_login(StaticLiveServerTestCase):
         botao = self.navegador.find_element(By.TAG_NAME, "button")
         botao.click()
 
-        # Aguarda a página recarregar
         self.espera.until(EC.presence_of_element_located((By.TAG_NAME, "form")))
-
-        # Verifica se ainda está na tela de login (não foi redirecionado)
         self.assertIn(reverse("login"), self.navegador.current_url)
