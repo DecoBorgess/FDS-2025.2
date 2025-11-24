@@ -224,7 +224,7 @@ Ficaram responsáveis pela atualização tanto do Jira, quanto do Readme.
       <img src="https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white" />
   </a>
     
-  <a href="https://youtu.be/UDhSIrb-RbE">
+  <a href="https://www.youtube.com/watch?v=N8q4MGGEWKg">
     <img src="https://img.shields.io/badge/Screencast Testes-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
 
   </a>
