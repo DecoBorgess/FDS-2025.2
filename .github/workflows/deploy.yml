@@ -1,9 +1,10 @@
 name: Django CI/CD to EC2
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["CI - Django"]
+    types:
+      - completed
 
 jobs:
   deploy:
@@ -16,7 +17,7 @@ jobs:
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'  # mesma versão da EC2
+          python-version: '3.9'  
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -32,12 +33,13 @@ jobs:
           source venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          cd cashpilot
           python manage.py test
 
       - name: Deploy para EC2 via SSH
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: 54.84.106.39
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
@@ -54,7 +56,7 @@ jobs:
 
             # ativa venv e instala dependências
             source venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r CashPilot/requirements.txt  # <-- corrigido aqui
 
             # entra no projeto e roda comandos Django
             cd CashPilot
@@ -66,3 +68,4 @@ jobs:
             sudo systemctl restart nginx.service
 
             echo "✅ Deploy finalizado com sucesso em $(date)"
+

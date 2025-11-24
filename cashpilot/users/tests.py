@@ -1,3 +1,6 @@
+import os
+import unittest
+
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -30,6 +33,10 @@ def criar_navegador():
     return driver
 
 
+@unittest.skipIf(
+    os.environ.get("CI") == "true",
+    "Pulado no CI: não há Chrome/Chromedriver no GitHub Actions."
+)
 class Teste_cadastro(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -65,6 +72,10 @@ class Teste_cadastro(StaticLiveServerTestCase):
         self.assertTrue(link_login.is_displayed())
 
 
+@unittest.skipIf(
+    os.environ.get("CI") == "true",
+    "Pulado no CI: não há Chrome/Chromedriver no GitHub Actions."
+)
 class Teste_login(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
